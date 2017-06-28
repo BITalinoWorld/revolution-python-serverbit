@@ -92,6 +92,9 @@ if __name__ == '__main__':
         os.mkdir(home)
         with open(home+'/config.json', 'w') as outfile:
             json.dump(config, outfile)
+        for file in ['ClientBIT.html', 'jquery.flot.js', 'jquery.js']:
+            with open(home+'/'+file, 'w') as outfile:
+                outfile.write(open(file).read())
     signal.signal(signal.SIGINT, signal_handler)
     app.listen(config['port'])
     print('LISTENING')

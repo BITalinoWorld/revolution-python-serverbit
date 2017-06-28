@@ -1,34 +1,40 @@
-# OpenSignals Barebone
+# Overview
 
-The ServerBIT (r)evolution is a barbone example application that can be run like a service, based on the Tornado event-driven networking engine, and designed to demonstrate the OpenSignals client-server architecture. You can use and modify the source code under the terms of the GPL licence.
+ServerBIT (r)evolution is a barbone example application, which can be run like a service, designed to demonstrate the OpenSignals client-server architecture. You can use and modify the source code under the terms of the GPL licence.
 
-This architecture is based on an asynchronous message passing protocol, in which the server and the client communicate using JSON-formatted strings. Although this code is primarily used for BITalino, it is completely general purpose.
+This architecture uses the Tornado event-driven networking engine in an approach where a Python backend handles the connection to the device, and streams the acquired data in near real-time as JSON-formatted structures to a client over the WebSockets protocol.
 
-`ServerBIT`.py connects to a device as per the configurations found in the `config.json` file and streams the data in real time over WebSockets.
+Although this code is currently used for BITalino, it is completely general purpose.
 
-`ClientBIT.html` is an example HTML/JS that connects to ServerBIT and opens a connection to a specified BITalino device to acquire data from A1 (EMG data as of early-2014 units) and draw it on the browser in realtime.
+`ServerBIT.py` connects to a device as per the configurations stored in a `config.json` file, expected to be found in the user home directory under a folder with the name `ServerBIT`. If it doesn't exist it is created automatically the first time the server is launched.
+
+`ClientBIT.html` is an example HTML/JavaScript test client, which connects to ServerBIT and opens a connection to a specified BITalino device to acquire data from A1 (EMG data as of early-2014 units) and draw it on the browser in realtime.
 
 
-## Pre-configured Bundles
+## Pre-Configured Installers
 
-- Can be downloaded and installed from: http://bitalino.com/en/development/utilities 
+- Can be downloaded and installed from: http://bitalino.com/en/development/utilities
+- Already include a Python distribution with all the dependencies
 
+### Windows
+
+### Mac OS 
 
 ## Running from Sources
 
-- Python 2.7 or above must be installed;
-- BITalino API and dependencies installed;
-- PySerial module installed;
-- Tornado module installed.
+- Python 2.7 must be installed
+- BITalino API and dependencies installed
+- PySerial module installed
+- Tornado module installed
 
 
 ## Testing ServerBIT
 
-- edit `config.json` on a text editor and change the `device` property to the MAC address or Virtual COM port of your BITalino device;
-- launch the `ServerBIT.py` script using your Python interpreter;
-- once a message similar to `LISTENING` appears in the console the server is ready to receive a connection;
-- open `ClientBIT.html` on your web browser;
-- you should start to see the instruction call log on the page body, and a real time signal corresponding to A1.
+- Edit `config.json` on a text editor and change the `device` property to the MAC address or Virtual COM port of your BITalino device
+- Launch the `ServerBIT.py` script using your Python interpreter
+- Once a message similar to `LISTENING` appears in the console the server is ready to receive a connection
+- Open `ClientBIT.html` on your web browser
+- You should start to see the instruction call log on the page body, and a real time signal corresponding to A1
 
 
 ## References

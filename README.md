@@ -17,7 +17,7 @@ We have prepared user-friendly installers that already include a Python distribu
 
 ## Windows
 
-- Download and install ServerBIT: http://www.bitalino.com/downloads/ServerBIT_win64.exe
+- Download and install ServerBIT: http://www.bitalino.com/downloads/ServerBIT_win64.zip
 - Launch ServerBIT (a connection error message should appear on a command line window)
 - Close the command line window 
 - Go to your the `ServerBIT` directory on your home folder and edit `config.json`

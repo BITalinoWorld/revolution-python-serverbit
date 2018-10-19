@@ -1,0 +1,214 @@
+<html>
+<head>
+	<link rel="stylesheet" type="text/css" href="static/jquery.mobile.min.css">
+	<script language="javascript" src="static/jquery.js"></script>
+	<script language="javascript" src="static/jquery.mobile.min.js"></script>
+	<style>
+	form, #reset_config {
+    margin: 35px;
+		width: 30%;
+	}
+	.form-group, .checkbox{
+  	display: inline-block;
+	}
+	#chn_field{
+		min-width: 366px;
+	}
+	</style>
+</head>
+
+<body>
+
+	<?php
+	print "Hello world!"
+	?>
+	<form id="config">
+		<label> Device Selection</label>
+		<select id="mySelect" onchange="device_click()">
+			<option value="">Select New Device</option>
+			{% for dev in dev_list %}
+			<option value={{dev[0]}} id={{dev[1]}}>{{dev[0]}}</option>
+			{% end %}
+		</select>
+		<label for="devinput-s"></label>
+		<input name="textinput-s" id="devinput-s" placeholder='MAC address (select above)' value={{crt_conf['device']}} data-clear-btn="true" type="text">
+		<input name="textinput-s" id="devtype-s" placeholder='Device Type' disabled=true data-clear-btn="true" type="text">
+
+		<!-- <label for="fsinput-s">Sampling Rate:</label>
+		<input name="textinput-s" id="fsinput-s" placeholder={{crt_conf['sampling_rate']}} value={{crt_conf['sampling_rate']}} data-clear-btn="true" type="text">
+
+		<label for="bsinput-s">Buffer Size:</label>
+		<input name="textinput-s" id="bsinput-s" placeholder={{crt_conf['buffer_size']}} value={{crt_conf['buffer_size']}} data-clear-btn="true" type="text"> -->
+
+		<label for="chnz-s"></label>
+		<fieldset id='chn_field' data-role="controlgroup" data-type="horizontal">
+			<legend>Channel Selection:</legend>
+				{% for chn in old_conf['channels'] %}
+					{% if chn in crt_conf['channels'] %}
+					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox" checked>
+					{% else %}
+					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox">
+					{% end %}
+					<label for="ch{{chn}}">Channel A{{chn}}</label>
+				{% end %}
+		</fieldset>
+		<label for="lblz-s"></label>
+		<fieldset id='lbl_field' data-role="controlgroup" data-type="horizontal">
+			<legend>Label Selection:</legend>
+				{% for chn in old_conf['labels'][:5] %}
+				<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}'>
+				{% end %}
+				{% for chn in old_conf['labels'][5:] %}
+				<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
+				{% end %}
+		</fieldset>
+
+		{% for key in crt_conf %}
+			{% if 'channels' not in key and 'labels' not in key and 'device' not in key %}
+			<label for={{key}}-s>{{key}}</label>
+				{% if 'protocol' in key %}
+				<select id="{{key}}-s">
+					<option value="" selected disabled hidden>{{crt_conf[key]}}</option>
+					<option value='"Websockets"'>Websockets</option>
+					<option value='"OSC"'>OSC</option>
+				</select>
+				{% else %}
+			<input name="textinput-s" id="{{key}}-s"  value={{crt_conf[key]}} data-clear-btn="true" type="text">
+				{% end %}
+			{% end %}
+		{% end %}
+
+		<!-- <label for="pinput-s">Port:</label>
+		<input name="textinput-s" id="pinput-s" placeholder={{crt_conf['port']}} value={{crt_conf['port']}} data-clear-btn="true" type="text"> -->
+
+		<input id='Submit' value="Submit" type="submit">
+	</form>
+
+	<button id="reset_config" type="button">Reset</button>
+
+<!-- <?php
+	$bool = false
+	if (!empty($_POST)){
+		$bool = true
+	};
+	print $bool
+?> -->
+
+<script>
+
+	var is_post = "<?php echo $bool ?>";
+	if (is_post){
+		document.getElementById('Submit').disabled = true
+	}else{
+		document.getElementById('Submit').disabled = false
+	}
+
+	if (document.getElementById("devinput-s").value === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
+		document.getElementById("devinput-s").value = ""
+	}
+
+	function device_click() {
+	  var d = document.getElementById("mySelect");
+	  document.getElementById("devinput-s").value = d.value;
+		document.getElementById("devtype-s").value = d.options[d.selectedIndex].id;
+	}
+
+	function clicked(buttonNumber){
+		if($('#ch'+buttonNumber).prop('checked')){
+			$('#lbA'+buttonNumber).textinput('enable')
+		} else {
+			$('#lbA'+buttonNumber).textinput('disable')
+		}
+	}
+
+	document.addEventListener('DOMContentLoaded', function() {
+		var f = document.getElementById("chn_field");
+		var inputs = f.getElementsByTagName("input")
+		for (var i = 1; i <= inputs.length; i++){
+	    clicked(i)
+		}
+	}, false);
+
+	function hasNumber(myString) {
+  	return /\d/.test(myString);
+	}
+
+
+$(document).on('submit', function( e ){
+		var entry_inputs = {}
+		var lbz = []
+		var chnz = []
+
+		var f = document.getElementById("lbl_field");
+		var inputs = f.getElementsByTagName("input")
+		for (var i = 0; i < inputs.length; i++){
+			if (!inputs[i].disabled){
+				lbz.push(inputs[i].value)
+				if (i > 4){
+					chnz.push( i-4 )
+				}
+			}
+		}
+		console.log(chnz.slice(5))
+
+		var fields = document.getElementById("config").querySelectorAll("label");
+		for (var i = 0; i <= fields.length; i++){
+			if (typeof fields[i] !== 'undefined') {
+				var key = fields[i].htmlFor
+				if (hasNumber(key) == false){
+					var input = document.getElementById(key);
+					if (input !== null){
+						// console.log(input.value)
+						entry_inputs[key] = input.value
+					}
+				}
+			}
+		}
+		console.log(entry_inputs)
+
+		json_entry_inputs = {
+			"device": entry_inputs["devinput-s"],
+			"sampling_rate": entry_inputs["sampling_rate-s"],
+			"buffer_size": entry_inputs["buffer_size-s"],
+			"ip_address": entry_inputs["ip_address-s"],
+			"port": entry_inputs["port-s"],
+			"protocol": entry_inputs["protocol-s"],
+			"channels": chnz,
+			"labels": lbz
+		};
+		$.ajax({
+			type: "POST",
+			url: 'http://localhost:9001/v1/configs',
+			async: 'true',
+			data: JSON.stringify(json_entry_inputs),
+			// data: '{"device": "'+dev+'", "sampling_rate":'+fs+', "buffer_size":'+bs+', "port":'+port+', "labels":"'+lbz+'", "channels":"'+ chnz +'"}',
+			success: function (result) {
+				alert(result)
+			},
+			error: function (request,error) {
+				// This callback function will trigger on unsuccessful action
+				alert(request.responseText)
+			}
+		})
+	});
+
+	document.getElementById("reset_config").addEventListener("click", function(){
+		console.log("reset")
+		$.ajax({
+			type: "POST",
+			url: 'http://localhost:9001/v1/configs',
+			async: 'true',
+			data: JSON.stringify("restored config.json"),
+			success: function (result) {
+				alert(result)
+			},
+			error: function (request,error) {
+				// This callback function will trigger on unsuccessful action
+				alert(request.responseText)
+			}
+		})
+	});
+	</script>
+</body>
+
+</html>

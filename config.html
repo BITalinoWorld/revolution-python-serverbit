@@ -19,12 +19,12 @@
 
 <body>
 
-	<?php
-	print "Hello world!"
-	?>
 	<form id="config">
 		<label> Device Selection</label>
-		<select id="mySelect" onchange="device_click()">
+		<button id="find_devices" type="button">Find Devices</button>
+		<img id="loading_anim" class="hideable_img" src="https://gitlab.com/weselle/revolution-python-serverbit/raw/Web-editor/static/images/ajax-loader.gif" height="42" width="42" style="display none;">
+	<br>
+		<select id="mySelect">
 			<option value="">Select New Device</option>
 			{% for dev in dev_list %}
 			<option value={{dev[0]}} id={{dev[1]}}>{{dev[0]}}</option>
@@ -86,32 +86,40 @@
 
 	<button id="reset_config" type="button">Reset</button>
 
-<!-- <?php
-	$bool = false
-	if (!empty($_POST)){
-		$bool = true
-	};
-	print $bool
-?> -->
-
 <script>
+	var dev_list = {}
 
-	var is_post = "<?php echo $bool ?>";
-	if (is_post){
-		document.getElementById('Submit').disabled = true
-	}else{
-		document.getElementById('Submit').disabled = false
+	function update_device_list(dl) {
+		$("#mySelect").empty();
+		var device_selector = document.getElementById("mySelect");
+		if (dl.size == 0)
+			return
+		dl.forEach(function(dev) {
+			var option = document.createElement("option");
+			option.text = dev[0];
+			option.value = dev[0];
+			option.id = dev[1]
+			device_selector.add(option);
+		});
+		$('.hideable_img').hide('slow');
 	}
+
+	updateDeviceType();
 
 	if (document.getElementById("devinput-s").value === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
 		document.getElementById("devinput-s").value = ""
 	}
 
-	function device_click() {
-	  var d = document.getElementById("mySelect");
-	  document.getElementById("devinput-s").value = d.value;
+	function updateDeviceType(){
+		var d = document.getElementById("mySelect");
+		document.getElementById("devinput-s").value = d.value;
 		document.getElementById("devtype-s").value = d.options[d.selectedIndex].id;
 	}
+
+	var device_clicked = document.getElementById("mySelect");
+	device_clicked.addEventListener('click', function(event) {
+		updateDeviceType();
+	});
 
 	function clicked(buttonNumber){
 		if($('#ch'+buttonNumber).prop('checked')){
@@ -121,20 +129,46 @@
 		}
 	}
 
-	document.addEventListener('DOMContentLoaded', function() {
-		var f = document.getElementById("chn_field");
-		var inputs = f.getElementsByTagName("input")
-		for (var i = 1; i <= inputs.length; i++){
-	    clicked(i)
-		}
-	}, false);
-
 	function hasNumber(myString) {
   	return /\d/.test(myString);
 	}
 
+	document.addEventListener('DOMContentLoaded', function() {
+		// update_device_list(dev_list)
+		var f = document.getElementById("chn_field");
+		var inputs = f.getElementsByTagName("input")
+		for (var i = 1; i <= inputs.length; i++){
+			clicked(i)
+		}
+	}, false);
+
+	$('.hideable_img').hide();
+	$("#find_devices").click(function () {
+		$('#loading_anim').show('fast');
+		var device_list_url = 'http://localhost:9001/v1/devices'
+        $.ajax({
+						url: device_list_url,
+						type: 'GET',
+						dataType: 'jsonp',
+				})
+
+				$.getJSON(device_list_url)
+				.done(function(response) {
+					 dev_list = response['dev_list']
+					 update_device_list(dev_list)
+				})
+
+				// setTimeout(function(){
+				// 	$('.hideable_img').hide('slow');
+				// }, 5000);
+    });
 
 $(document).on('submit', function( e ){
+		if (document.getElementById("devtype-s").value == ""){
+			alert("Please select a BITalino device in Device Selection")
+			window.location.href = 'http://localhost:9001/config'
+			return;
+		}
 		var entry_inputs = {}
 		var lbz = []
 		var chnz = []
@@ -176,6 +210,7 @@ $(document).on('submit', function( e ){
 			"channels": chnz,
 			"labels": lbz
 		};
+
 		$.ajax({
 			type: "POST",
 			url: 'http://localhost:9001/v1/configs',
@@ -183,11 +218,12 @@ $(document).on('submit', function( e ){
 			data: JSON.stringify(json_entry_inputs),
 			// data: '{"device": "'+dev+'", "sampling_rate":'+fs+', "buffer_size":'+bs+', "port":'+port+', "labels":"'+lbz+'", "channels":"'+ chnz +'"}',
 			success: function (result) {
-				alert(result)
+				alert("redirecting to ClientBIT")
+				window.location.href = 'http://localhost:9001/v1/configs'
 			},
 			error: function (request,error) {
 				// This callback function will trigger on unsuccessful action
-				alert(request.responseText)
+				alert(request.responseText);
 			}
 		})
 	});

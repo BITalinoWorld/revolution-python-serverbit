@@ -65,11 +65,15 @@ def change_json_value(file,orig,new):
 
 class Index(web.RequestHandler):
     def get(self):
+        device_list = listDevices()
         # self.render("config.html", crt_conf = json.load(open('./static/bit_config.json', 'r')), dev_list = device_list)
         self.render("config.html",
             crt_conf = json.load(open(json_file_path, 'r')),
             old_conf = json.load(open('./static/bit_config.json', 'r')),
             dev_list = device_list)
+
+    def on_message(self, message):
+        self.write_message(u"You said: " + message)
 
 class SocketHandler(websocket.WebSocketHandler):
     def check_origin(self, origin):
@@ -79,6 +83,34 @@ class SocketHandler(websocket.WebSocketHandler):
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
+
+    def on_message(self, message):
+        self.write_message(u"You said: " + message)
+
+    def on_close(self):
+        if self in cl:
+            cl.remove(self)
+        print("DISCONNECTED")
+
+class DeviceUpdateHandler(web.RequestHandler):
+    def check_origin(self, origin):
+        return True
+
+    def open(self):
+        self.write("device_list")
+        if self not in cl:
+            cl.append(self)
+        print("CONNECTED")
+
+    def get(self):
+        device_list = listDevices()
+        device_dict = {}
+        device_dict['dev_list'] = device_list.tolist()
+        device_list = json.dumps(tostring(device_dict))
+        device_list = json.loads(device_list)
+        print (device_list)
+        self.write(device_list)
+        # self.write(device_list)
 
     def on_message(self, message):
         self.write_message(u"You said: " + message)
@@ -161,10 +193,9 @@ def check_device_addr(addr):
     return addr
 
 settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
-app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/configs', Configs)], **settings)
+app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/configs', Configs)], **settings)
 
 if __name__ == '__main__':
-    device_list = listDevices()
     home = expanduser("~") + '/ServerBIT'
     print(home)
     try:

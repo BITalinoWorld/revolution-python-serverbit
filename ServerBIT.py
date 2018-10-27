@@ -18,11 +18,11 @@ cl = []
 conf_json = {}
 home = ''
 device_list = numpy.array([])
-OS = 'darwin'
 json_file_path = './static/bit_config.json'
 default_addr = "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"
 
 class Utils:
+    OS = None
     BITalino_device = None
     USE_GUI = True
     sensor_data_json = ""
@@ -65,12 +65,12 @@ def change_json_value(file,orig,new):
 
 class Index(web.RequestHandler):
     def get(self):
-        device_list = listDevices()
+#        device_list = listDevices()
         # self.render("config.html", crt_conf = json.load(open('./static/bit_config.json', 'r')), dev_list = device_list)
         self.render("config.html",
             crt_conf = json.load(open(json_file_path, 'r')),
             old_conf = json.load(open('./static/bit_config.json', 'r')),
-            dev_list = device_list)
+            )
 
     def on_message(self, message):
         self.write_message(u"You said: " + message)
@@ -110,7 +110,6 @@ class DeviceUpdateHandler(web.RequestHandler):
         device_list = json.loads(device_list)
         print (device_list)
         self.write(device_list)
-        # self.write(device_list)
 
     def on_message(self, message):
         self.write_message(u"You said: " + message)
@@ -151,7 +150,7 @@ def listDevices():
     print ("============")
     print ("please select your device:")
     print ("Example: /dev/tty.BITalino-XX-XX-DevB")
-    allDevices = deviceFinder.findDevices(OS)
+    allDevices = deviceFinder.findDevices(ut.OS)
     dl = []
     for dev in allDevices:
         dl.append([ut.add_quote(dev[0]), dev[1]])
@@ -196,6 +195,8 @@ settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
 app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/configs', Configs)], **settings)
 
 if __name__ == '__main__':
+    ut.OS = platform.system()
+    print ("Detected platform: " + ut.OS)
     home = expanduser("~") + '/ServerBIT'
     print(home)
     try:

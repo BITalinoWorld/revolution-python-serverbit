@@ -26,9 +26,6 @@
 	<br>
 		<select id="mySelect">
 			<option value="">Select New Device</option>
-			{% for dev in dev_list %}
-			<option value={{dev[0]}} id={{dev[1]}}>{{dev[0]}}</option>
-			{% end %}
 		</select>
 		<label for="devinput-s"></label>
 		<input name="textinput-s" id="devinput-s" placeholder='MAC address (select above)' value={{crt_conf['device']}} data-clear-btn="true" type="text">
@@ -88,12 +85,15 @@
 
 <script>
 	var dev_list = {}
-
+//    update_device_list(dev_list)
+    
 	function update_device_list(dl) {
 		$("#mySelect").empty();
 		var device_selector = document.getElementById("mySelect");
-		if (dl.size == 0)
+		if (dl.size == 0){
+            mySelect.options[0].text = "true"
 			return
+        }
 		dl.forEach(function(dev) {
 			var option = document.createElement("option");
 			option.text = dev[0];
@@ -147,9 +147,9 @@
 		$('#loading_anim').show('fast');
 		var device_list_url = 'http://localhost:9001/v1/devices'
         $.ajax({
-						url: device_list_url,
-						type: 'GET',
-						dataType: 'jsonp',
+                url: device_list_url,
+                type: 'GET',
+                dataType: 'jsonp',
 				})
 
 				$.getJSON(device_list_url)

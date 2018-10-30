@@ -1,11 +1,16 @@
 <html>
 <head>
 	<link rel="stylesheet" type="text/css" href="static/jquery.mobile.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css">
 	<script language="javascript" src="static/jquery.js"></script>
 	<script language="javascript" src="static/jquery.mobile.min.js"></script>
+    <script language="javascript"  src="static/jquery.add-input-area.min.js"></script>
 	<style>
-	form, #reset_config {
-    margin: 35px;
+    table {
+        width: 250%;
+    }
+    form, #reset_config, #kill_instance, #Submit {
+        margin: 35px;
 		width: 30%;
 	}
 	.form-group, .checkbox{
@@ -16,20 +21,31 @@
 	}
 	</style>
 </head>
-
 <body>
 
 	<form id="config">
 		<label> Device Selection</label>
 		<button id="find_devices" type="button">Find Devices</button>
-		<img id="loading_anim" class="hideable_img" src="https://gitlab.com/weselle/revolution-python-serverbit/raw/Web-editor/static/images/ajax-loader.gif" height="42" width="42" style="display none;">
-	<br>
-		<select id="mySelect">
-			<option value="">Select New Device</option>
-		</select>
-		<label for="devinput-s"></label>
-		<input name="textinput-s" id="devinput-s" placeholder='MAC address (select above)' value={{crt_conf['device']}} data-clear-btn="true" type="text">
-		<input name="textinput-s" id="devtype-s" placeholder='Device Type' disabled=true data-clear-btn="true" type="text">
+		<img id="loading_anim" class="hideable_img" src="static/images/ajax-loader.gif" height="42" width="42" style="display none;">
+	<br>    
+<!--        <input name="textinput-s" id="devinput-s" placeholder='device list' value={{crt_conf['device']}} disabled="true" data-clear-btn="true" type="text">-->
+        
+        <table id="device-list" class="table"><!-- "id" attribute is required -->
+            <tbody>
+                <tr class="device-list_var"><!-- .(id)_var -->
+                    <td><select class="dev_selector" id="mySelect_0">
+			             <option value="">Select New Device</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="textinput-s" id="device_0" placeholder='MAC address (select above)' value={{crt_conf['device']}} data-clear-btn="true" ></td>
+                    <td><input type="text" name="textinput-s" id="devicetype_0" disabled=true data-clear-btn="true" ></td>
+                    <td class="del-area"><button class="device-list_del btn-default">Remove</button></td>
+                 </tr>
+            </tbody>
+        </table>
+        <input type="button" value="Add" class="device-list_add"><!-- .(id)_add --
+        <a href="javascript:void(0)" class="list_add btn btn-danger">Add</a><br>
+
 
 		<!-- <label for="fsinput-s">Sampling Rate:</label>
 		<input name="textinput-s" id="fsinput-s" placeholder={{crt_conf['sampling_rate']}} value={{crt_conf['sampling_rate']}} data-clear-btn="true" type="text">
@@ -58,8 +74,9 @@
 				{% for chn in old_conf['labels'][5:] %}
 				<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
 				{% end %}
+            
 		</fieldset>
-
+        
 		{% for key in crt_conf %}
 			{% if 'channels' not in key and 'labels' not in key and 'device' not in key %}
 			<label for={{key}}-s>{{key}}</label>
@@ -82,43 +99,61 @@
 	</form>
 
 	<button id="reset_config" type="button">Reset</button>
+    <button id="kill_instance" type="button">Stop ServerBIT</button>
 
 <script>
-	var dev_list = {}
-//    update_device_list(dev_list)
-    
+    var dev_list = {}
+    var num_devices = 1
+    $('#device-list').addInputArea({
+        maximum : 10,
+        area_del: '.del-area',
+        after_add: function () {
+            num_devices = $('select.dev_selector').length;
+            var new_id = (num_devices-1).toString();
+            var new_dropdown = $('select.dev_selector').last();
+            var new_dropdown_id = "mySelect_".concat((num_devices-1).toString());
+            new_dropdown.prop("id", new_dropdown_id);
+            new_dropdown.click(function() {
+                console.log(new_id);
+                updateDeviceType(document.getElementById(new_dropdown.attr("id")), new_id);
+            })
+        }
+    });
+        
 	function update_device_list(dl) {
-		$("#mySelect").empty();
-		var device_selector = document.getElementById("mySelect");
+//		$(".dev_selector").find('option').not(':first').remove();
 		if (dl.size == 0){
-            mySelect.options[0].text = "true"
 			return
         }
-		dl.forEach(function(dev) {
-			var option = document.createElement("option");
-			option.text = dev[0];
-			option.value = dev[0];
-			option.id = dev[1]
-			device_selector.add(option);
-		});
+        $("select.dev_selector").each(function(){
+            $(this.id).find('option').not(':first').remove();
+            var my_dropdown = document.getElementById((this.id).toString())
+            dl.forEach(function(dev) {
+                var option = document.createElement("option");
+                option.text = dev[0];
+                option.value = dev[0];
+                option.id = dev[1];
+                my_dropdown.add(option)
+            });
+        });
 		$('.hideable_img').hide('slow');
 	}
 
-	updateDeviceType();
-
-	if (document.getElementById("devinput-s").value === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
-		document.getElementById("devinput-s").value = ""
+	if (document.getElementById("device_0").value === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
+		document.getElementById("device_0").value = ""
 	}
 
-	function updateDeviceType(){
-		var d = document.getElementById("mySelect");
-		document.getElementById("devinput-s").value = d.value;
-		document.getElementById("devtype-s").value = d.options[d.selectedIndex].id;
+	function updateDeviceType( d , d_id){
+        var device_id = "device_".concat(d_id);
+        var devicetype_id = "devicetype_".concat(d_id);
+		document.getElementById(device_id).value = d.value;
+		document.getElementById(devicetype_id).value = d.options[d.selectedIndex].id;
 	}
 
-	var device_clicked = document.getElementById("mySelect");
+	var device_clicked = document.getElementById("mySelect_0");
+    updateDeviceType(device_clicked, 0);
 	device_clicked.addEventListener('click', function(event) {
-		updateDeviceType();
+		updateDeviceType(device_clicked, 0);
 	});
 
 	function clicked(buttonNumber){
@@ -130,7 +165,11 @@
 	}
 
 	function hasNumber(myString) {
-  	return /\d/.test(myString);
+  	     return /\d/.test(myString);
+	}
+    
+    function addID(myString, id) {
+  	     return myString.concat(id.toString());
 	}
 
 	document.addEventListener('DOMContentLoaded', function() {
@@ -140,10 +179,19 @@
 		for (var i = 1; i <= inputs.length; i++){
 			clicked(i)
 		}
-	}, false);
+    });
+    
+    function get_device_list(json_response){
+        $.getJSON(json_response).done(function(response) {
+                    dev_list = response['dev_list']
+                    update_device_list(dev_list)
+            })
+    }
 
 	$('.hideable_img').hide();
-	$("#find_devices").click(function () {
+	$("#find_devices").click(function (e) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
 		$('#loading_anim').show('fast');
 		var device_list_url = 'http://localhost:9001/v1/devices'
         $.ajax({
@@ -151,24 +199,20 @@
                 type: 'GET',
                 dataType: 'jsonp',
 				})
-
-				$.getJSON(device_list_url)
-				.done(function(response) {
-					 dev_list = response['dev_list']
-					 update_device_list(dev_list)
-				})
-
-				// setTimeout(function(){
-				// 	$('.hideable_img').hide('slow');
-				// }, 5000);
+        $.getJSON(device_list_url).done( function (response) {
+                    dev_list = response['dev_list'];
+                    update_device_list(dev_list);
+            });
     });
+    
+    
 
 $(document).on('submit', function( e ){
-		if (document.getElementById("devtype-s").value == ""){
-			alert("Please select a BITalino device in Device Selection")
-			window.location.href = 'http://localhost:9001/config'
-			return;
-		}
+//		if (document.getElementById("devtype-s").value == ""){
+//			alert("Please select a BITalino device in Device Selection")
+//			window.location.href = 'http://localhost:9001/config'
+//			return;
+//		}
 		var entry_inputs = {}
 		var lbz = []
 		var chnz = []

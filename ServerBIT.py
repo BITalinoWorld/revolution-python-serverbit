@@ -141,6 +141,7 @@ class Configs(web.RequestHandler):
                 print (old_value)
                 print ("writing to json:" + new_value)
                 change_json_value(json_file_path, old_value, str(new_value))
+        sys.exit(1)
 
 def signal_handler(signal, frame):
     print('TERMINATED')

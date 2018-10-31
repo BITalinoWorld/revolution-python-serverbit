@@ -23,6 +23,7 @@ default_addr = "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"
 
 class Utils:
     OS = None
+    enable_servers = {"BITalino": 'true', "Riot": 'false'}
     BITalino_device = None
     USE_GUI = True
     sensor_data_json = ""
@@ -30,6 +31,14 @@ class Utils:
 
     def add_quote(self, a):
         return '"{0}"'.format(a)
+
+    def strToBool(self, v):
+        return v.lower() in ("True", "true", "1")
+
+    def jsonToBool(self, json):
+        for key, bool in json.items():
+            json[key] = self.strToBool(bool)
+        return json
 
 ut = Utils()
 
@@ -65,8 +74,6 @@ def change_json_value(file,orig,new):
 
 class Index(web.RequestHandler):
     def get(self):
-#        device_list = listDevices()
-        # self.render("config.html", crt_conf = json.load(open('./static/bit_config.json', 'r')), dev_list = device_list)
         self.render("config.html",
             crt_conf = json.load(open(json_file_path, 'r')),
             old_conf = json.load(open('./static/bit_config.json', 'r')),
@@ -96,20 +103,45 @@ class DeviceUpdateHandler(web.RequestHandler):
     def check_origin(self, origin):
         return True
 
+    def post(self):
+        print(self.request.body)
+        ut.enable_servers = json.loads(self.request.body)
+        ut.enable_servers = ut.jsonToBool(ut.enable_servers)
+
     def open(self):
         self.write("device_list")
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
 
+
     def get(self):
-        device_list = listDevices()
+        device_list = listDevices(ut.enable_servers)
         device_dict = {}
         device_dict['dev_list'] = device_list.tolist()
         device_list = json.dumps(tostring(device_dict))
         device_list = json.loads(device_list)
         print (device_list)
         self.write(device_list)
+
+    def on_message(self, message):
+        self.write_message(u"You said: " + message)
+
+    def on_close(self):
+        if self in cl:
+            cl.remove(self)
+        print("DISCONNECTED")
+
+class DeviceFinderHandler(web.RequestHandler):
+    def check_origin(self, origin):
+        return True
+
+    def open(self):
+        print("CONNECTED")
+
+    def post(self):
+        print(self.request.body)
+        servers = json.loads(self.request.body)
 
     def on_message(self, message):
         self.write_message(u"You said: " + message)
@@ -147,10 +179,14 @@ def signal_handler(signal, frame):
     print('TERMINATED')
     sys.exit(0)
 
-def listDevices():
+def listDevices(enable_servers):
     print ("============")
     print ("please select your device:")
     print ("Example: /dev/tty.BITalino-XX-XX-DevB")
+    if(enable_servers["Bitalino"]):
+        print("listing PLUX devices")
+    if(enable_servers["Riot"]):
+        print("listing Riot devices")
     allDevices = deviceFinder.findDevices(ut.OS)
     dl = []
     for dev in allDevices:
@@ -193,7 +229,7 @@ def check_device_addr(addr):
     return addr
 
 settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
-app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/configs', Configs)], **settings)
+app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/finders', DeviceFinderHandler), (r'/v1/configs', Configs)], **settings)
 
 if __name__ == '__main__':
     ut.OS = platform.system()

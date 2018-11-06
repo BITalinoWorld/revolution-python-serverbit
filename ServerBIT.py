@@ -145,7 +145,8 @@ class DeviceFinderHandler(web.RequestHandler):
 
     def post(self):
         print(self.request.body)
-        servers = json.loads(self.request.body)
+        ut.enable_servers = json.loads(self.request.body)
+        ut.enable_servers = ut.jsonToBool(ut.enable_servers)
 
     def on_message(self, message):
         self.write_message(u"You said: " + message)

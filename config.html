@@ -7,7 +7,7 @@
     <script language="javascript"  src="static/jquery.add-input-area.min.js"></script>
 	<style>
 
-		#config, #reset_config{
+		#config, #reset_config, #import_file{
 			margin: 35px !important;
 			width: 50% !important;
 		}
@@ -26,10 +26,25 @@
 			min-width: 366px;
 		}
 
+		#result {
+		  display:block;
+		  width:400px;
+		  height:200px;
+		}
+
+		#import {
+		  margin:10px 0;
+		}
+
 	</style>
 </head>
 <body>
 
+	<div id="import_file">
+		<label>Import config file (optional)</label>
+		<input type="file" id="select_json_file" value="Import" />
+		<button id="import_json">Import</button>
+	</div>
 	<form id="config">
 		<!-- <label> </label> -->
 		<legend>Device Selection:</legend>

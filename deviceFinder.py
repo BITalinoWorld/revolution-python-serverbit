@@ -1,6 +1,8 @@
 """
 deviceFinder tools for SerberBIT 2018, adapted from PLUX openSignals module
 wprimett@plux.info
+# List PLUX device addresses and their types
+# Enable OSC servers to find R-IoT modules
 """
 """
 * Copyright (c) PLUX S.A., All Rights Reserved.
@@ -18,6 +20,7 @@ wprimett@plux.info
 
 """
 import re
+import riot
 
 regex_bitalino = re.compile('[b|B][i|I][t|T][a|A][l|L][i|I][n|N][o|O]')
 regex_bioplux = re.compile('[b|B][i|I][o|O][p|P][l|L][u|U][x|X]')
@@ -98,15 +101,16 @@ def findDevicesManually(device_type_connection, device_id, device_type):
     return device_list
 
 
-def findDevices(OS):
+def findDevices(OS, enable_servers):
     starters = ['BLE', 'BTH']
     device_list = []
+    # WINDOWS AND LINUX - SEARCH FOR NEARBY BLUETOOTH DEVICES
     if OS == 'Windows' or OS == 'Linux':
         from bluetooth import discover_devices, BluetoothError
         allDevices = []
         print ('searching for devices...')
         try:
-            allDevices = discover_devices(duration=10, lookup_names=True)
+            allDevices = discover_devices(duration=6, lookup_names=True)
             numDevices = len(allDevices)
             print ("found %i devices" % numDevices)
         except (BluetoothError, OSError) as e:
@@ -121,23 +125,21 @@ def findDevices(OS):
             except Exception as e:
                 pass
                 #print("DEVICE FINDER | " + str(mac) + ": " + str(e))
+    # MACOS - LIST CURRENTLY PAIRED DEVICES
     else:
-        import biplist
-        import binascii
-        PersistentPorts = biplist.readPlist(bluetooth_plist)['PersistentPorts']
-        for key, device in list(PersistentPorts.items()):
-            try:
-                device_connection = '/dev/tty.' + device['BTTTYName']
-                device_type = check_type(str(device_connection))
-                #mac = binascii.hexlify(device['BTAddress'])
-                # device_mac = ''
-                # for pos in range(len(mac)):
-                #     device_mac += mac[pos]
-                #     if (pos % 2 != 0) and (pos < len(mac) - 1):
-                #         device_mac += ":"
-                # print (device_mac)
-                device_list.append([device_connection, device_type])
-            except Exception as e:
-                pass
+        if enable_servers["Bluetooth"]:
+            import biplist
+            import binascii
+            PersistentPorts = biplist.readPlist(bluetooth_plist)['PersistentPorts']
+            for key, device in list(PersistentPorts.items()):
+                try:
+                    device_connection = '/dev/tty.' + device['BTTTYName']
+                    device_type = check_type(str(device_connection))
+                    device_list.append([device_connection, device_type])
+                except Exception as e:
+                    pass
+        if enable_servers["OSC"]:
+            device_list.extend(riot.fetch_devices(enable_servers['OSC_config'][0], enable_servers['OSC_config'][1], 1))
+            print(device_list)
 
     return device_list

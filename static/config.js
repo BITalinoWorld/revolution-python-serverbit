@@ -1,4 +1,5 @@
     var dev_list = {}
+    var dev_entry = []
     var num_devices = 1
     $('#device-list').addInputArea({
         maximum : 10,
@@ -10,11 +11,23 @@
             var new_dropdown_id = "mySelect_".concat((num_devices-1).toString());
             new_dropdown.prop("id", new_dropdown_id);
             new_dropdown.change(function() {
-                console.log(new_id);
-                updateDeviceType(document.getElementById(new_dropdown.attr("id")), new_id);
+                update_device_type(document.getElementById(new_dropdown.attr("id")), new_id);
             })
         }
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // update_device_list(dev_list)
+      var f = document.getElementById("chn_field");
+      var inputs = f.getElementsByTagName("input")
+      for (var i = 1; i <= inputs.length; i++){
+        clicked(i)
+      }
+      $("#devinput-s").prop("value", $("label[for='devinput-s']").html());
+      $("label[for='devinput-s']").html("Device List");
+      $("#chn_field, #lbl_field, .input_toggle").hide();
+      $("#protocol-s, #ip_address-s, #port-s, label[for='ip_address-s'], label[for='port-s'], label[for='protocol-s'").show();
+      });
 
 	function server_handler(device_finder) {
 		document.getElementById("find_devices").disabled = $('input[name="finder[]"]:checked').length == 0
@@ -31,12 +44,12 @@
 	}
 
 	function update_device_list(dl) {
-	if (dl.size == 0){
-			return
-  	}
   	$("select.dev_selector").each(function(){
-        $(this.id).find('option').not(':first').remove();
+        $('#'.concat(this.id.toString())).find('option').not(':first').remove();
         var my_dropdown = document.getElementById((this.id).toString())
+        if (dl.size == 0){
+            return
+        }
         dl.forEach(function(dev) {
             var option = document.createElement("option");
             option.text = dev[0];
@@ -52,17 +65,27 @@
 		document.getElementById("device_0").value = ""
 	}
 
-	function updateDeviceType( d , d_id){
+  function update_device_entry( addr ){
+    dev_entry.push(addr);
+    dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
+    $("#devinput-s").val(dev_entry);
+  }
+
+	function update_device_type( d , d_id){
+    update_device_entry(d.value)
     var device_id = "device_".concat(d_id);
     var devicetype_id = "devicetype_".concat(d_id);
 		document.getElementById(device_id).value = d.value;
 		document.getElementById(devicetype_id).value = d.options[d.selectedIndex].id;
+    if (document.getElementById(devicetype_id).value === "bitalino"){
+      $("#chn_field, #lbl_field, .input_toggle").show("fast");
+    }
 	}
 
 	var device_clicked = document.getElementById("mySelect_0");
-    updateDeviceType(device_clicked, 0);
+    update_device_type(device_clicked, 0);
 	device_clicked.addEventListener('change', function(event) {
-		updateDeviceType(device_clicked, 0);
+		update_device_type(device_clicked, 0);
 	});
 
 	function clicked(buttonNumber){
@@ -77,33 +100,18 @@
   	     return /\d/.test(myString);
 	}
 
-    function addID(myString, id) {
+  function addID(myString, id) {
   	     return myString.concat(id.toString());
 	}
-
-	document.addEventListener('DOMContentLoaded', function() {
-		// update_device_list(dev_list)
-		var f = document.getElementById("chn_field");
-		var inputs = f.getElementsByTagName("input")
-		for (var i = 1; i <= inputs.length; i++){
-			clicked(i)
-		}
-    });
-
-    function get_device_list(json_response){
-        $.getJSON(json_response).done(function(response) {
-                    dev_list = response['dev_list']
-                    update_device_list(dev_list)
-            })
-    }
 
 	$('.hideable_img').hide();
 	$("#find_devices").click(function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
 				var json_device_finder = {
-							"Bitalino": $('input[name="finder[]"]')[0].checked.toString(),
-							"Riot": $('input[name="finder[]"]')[1].checked.toString()
+							"Bluetooth": $('input[name="finder[]"]')[0].checked.toString(),
+							"OSC": $('input[name="finder[]"]')[1].checked.toString(),
+              "OSC_config": ['192.168.1.100', 8888]
 						};
 				console.log(json_device_finder)
 				$.ajax({
@@ -126,13 +134,13 @@
             });
     });
 
-$(document).on('submit', function( e ){
+$(document).on('submit', function(){
 		$("select.dev_selector").each(function(){
 			var my_dropdown = document.getElementById((this.id).toString())
 			if (my_dropdown.value == ""){
 				alert("Please select a BITalino device in Device Selection")
 				window.location.href = 'http://localhost:9001/config'
-				return false;
+				return 0;
 			}
 		})
 		var entry_inputs = {}
@@ -155,7 +163,7 @@ $(document).on('submit', function( e ){
 		for (var i = 0; i <= fields.length; i++){
 			if (typeof fields[i] !== 'undefined') {
 				var key = fields[i].htmlFor
-				if (hasNumber(key) == false){
+				if (hasNumber(key) == false && key.slice(-2) === '-s'){
 					var input = document.getElementById(key);
 					if (input !== null){
 						// console.log(input.value)
@@ -167,7 +175,7 @@ $(document).on('submit', function( e ){
 		console.log(entry_inputs)
 
 		json_entry_inputs = {
-			"device": entry_inputs["device_s"],
+			"device": entry_inputs["devinput-s"],
 			"sampling_rate": entry_inputs["sampling_rate-s"],
 			"buffer_size": entry_inputs["buffer_size-s"],
 			"ip_address": entry_inputs["ip_address-s"],

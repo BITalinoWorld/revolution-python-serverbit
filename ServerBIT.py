@@ -20,6 +20,7 @@ home = ''
 device_list = numpy.array([])
 json_file_path = './static/bit_config.json'
 default_addr = "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"
+conf_port = 9001
 
 class Utils:
     OS = None
@@ -33,7 +34,10 @@ class Utils:
         return '"{0}"'.format(a)
 
     def strToBool(self, v):
-        return v.lower() in ("True", "true", "1")
+        try:
+            return v.lower() in ("True", "true", "1")
+        except Exception as e:
+            return v
 
     def jsonToBool(self, json):
         for key, bool in json.items():
@@ -173,7 +177,7 @@ class Configs(web.RequestHandler):
                 print (old_value)
                 print ("writing to json:" + new_value)
                 change_json_value(json_file_path, old_value, str(new_value))
-        sys.exit(1)
+        # sys.exit(1)
 
 def signal_handler(signal, frame):
     print('TERMINATED')
@@ -183,11 +187,11 @@ def listDevices(enable_servers):
     print ("============")
     print ("please select your device:")
     print ("Example: /dev/tty.BITalino-XX-XX-DevB")
-    if(enable_servers["Bitalino"]):
+    if(enable_servers["Bluetooth"]):
         print("listing PLUX devices")
-    if(enable_servers["Riot"]):
+    if(enable_servers["OSC"]):
         print("listing Riot devices")
-    allDevices = deviceFinder.findDevices(ut.OS)
+    allDevices = deviceFinder.findDevices(ut.OS, enable_servers)
     dl = []
     for dev in allDevices:
         dl.append([ut.add_quote(dev[0]), dev[1]])
@@ -256,6 +260,6 @@ if __name__ == '__main__':
 
     # print(conf_json)
     signal.signal(signal.SIGINT, signal_handler)
-    app.listen(conf_json['port'])
+    app.listen(conf_port)
     # thread.start_new_thread(BITalino_handler, (conf_json['device'],conf_json['channels'],conf_json['sampling_rate'], conf_json['labels']))
     ioloop.IOLoop.instance().start()

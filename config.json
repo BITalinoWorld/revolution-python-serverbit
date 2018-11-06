@@ -4,7 +4,7 @@
 	"sampling_rate": 1000,
 	"buffer_size": 10,
 	"labels": ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"],
+	"protocol": "Websockets",
 	"ip_address": "127.0.0.1",
-	"port": 9001,
-	"protocol": "Websockets"
+	"port": 9001
 }

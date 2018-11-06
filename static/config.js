@@ -9,8 +9,8 @@
       for (var i = 1; i <= inputs.length; i++){
         clicked(i)
       }
-      $("#devinput-s").prop("value", $("label[for='devinput-s']").html());
-      $("label[for='devinput-s']").html("Device List");
+      $("#device-s").prop("value", $("label[for='device-s']").html());
+      $("label[for='device-s']").html("Device List");
       $("#chn_field, #lbl_field, .input_toggle").hide();
       $("#protocol-s, #ip_address-s, #port-s, label[for='ip_address-s'], label[for='port-s'], label[for='protocol-s'").show();
 
@@ -76,7 +76,7 @@
   function update_device_entry( addr ){
     dev_entry.push(addr);
     dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
-    $("#devinput-s").val(dev_entry);
+    $("#device-s").val(dev_entry);
   }
 
 	function update_device_type( d , d_id){
@@ -130,7 +130,7 @@
 						data: JSON.stringify(json_device_finder)
 				});
 				$('#loading_anim').show('fast');
-        
+
         $.getJSON(device_list_url).done( function (response) {
                     dev_list = response['dev_list'];
                     update_device_list(dev_list);
@@ -178,7 +178,7 @@ $(document).on('submit', function(){
 		console.log(entry_inputs)
 
 		json_entry_inputs = {
-			"device": entry_inputs["devinput-s"],
+			"device": entry_inputs["device-s"],
 			"sampling_rate": entry_inputs["sampling_rate-s"],
 			"buffer_size": entry_inputs["buffer_size-s"],
 			"ip_address": entry_inputs["ip_address-s"],
@@ -246,7 +246,7 @@ $(document).on('submit', function(){
   		console.log(entry_inputs)
 
   		json_entry_inputs = {
-  			"device": entry_inputs["devinput-s"],
+  			"device": entry_inputs["device-s"],
   			"sampling_rate": entry_inputs["sampling_rate-s"],
   			"buffer_size": entry_inputs["buffer_size-s"],
   			"ip_address": entry_inputs["ip_address-s"],
@@ -283,7 +283,11 @@ $(document).on('submit', function(){
     fr.onload = function(e) {
       var result = JSON.parse(e.target.result);
       var formatted = JSON.stringify(result, null, 2);
-  		console.log(formatted);
+  		console.log(result);
+      $.each(result, function (key, value) {
+        var form_input_id = key.toString().concat('-s')
+        $("#".concat(form_input_id)).val(value)
+      });
     }
     fr.readAsText(files.item(0));
   });

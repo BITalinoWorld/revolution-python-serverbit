@@ -44,6 +44,7 @@
 		<label>Import config file (optional)</label>
 		<input type="file" id="select_json_file" value="Import" />
 		<button id="import_json">Import</button>
+		<p id="console_output"></p>
 	</div>
 	<form id="config">
 		<!-- <label> </label> -->
@@ -76,7 +77,7 @@
         <input type="button" value="Add" class="device-list_add"><!-- .(id)_add -->
 
 				<label for="device-s">{{crt_conf['device']}}</label>
-				<input name="textinput-s" id="devinput-s" disabled="true" placeholder="device list (select above)" value={{crt_conf['device']}} type="text">
+				<input name="textinput-s" id="device-s" disabled="true" placeholder="device list (select above)" type="text">
 
 		<label for="chnz-s"></label>
 		<fieldset id='chn_field' data-role="controlgroup" data-type="horizontal">

@@ -69,14 +69,15 @@
 		$('.hideable_img').hide('slow');
 	}
 
-	if (document.getElementById("device_0").value === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
-		document.getElementById("device_0").value = ""
-	}
+  if ($("#device-s").val() === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
+    $("#device-s").val("")
+    $("#device_0").val("")
+  }
 
   function update_device_entry( addr ){
     dev_entry.push(addr);
     dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
-    $("#device-s").val(dev_entry);
+    $("#device-s").prop('value', dev_entry);
   }
 
 	function update_device_type( d , d_id){
@@ -275,22 +276,31 @@ $(document).on('submit', function(){
 
   $("#import_json").click(function (e) {
     var files = document.getElementById('select_json_file').files;
-    console.log(files);
     if (files.length <= 0) {
       return false;
-  }
-  var fr = new FileReader();
-    fr.onload = function(e) {
-      var result = JSON.parse(e.target.result);
-      var formatted = JSON.stringify(result, null, 2);
-  		console.log(result);
-      $.each(result, function (key, value) {
-        var form_input_id = key.toString().concat('-s')
-        $("#".concat(form_input_id)).val(value)
-      });
     }
-    fr.readAsText(files.item(0));
-  });
+    var fr = new FileReader();
+      fr.onload = function(e, isLast) {
+        if (IsJsonString(e.target.result) == false){
+          debug_text("invalid config file")
+          return
+        }
+        var file_name = $("#select_json_file").val().replace(/^.*[\\\/]/, '')
+        var result = JSON.parse(e.target.result);
+        var formatted = JSON.stringify(result, null, 2);
+        $.each(result, function (key, value) {
+            var form_input_id = key.toString().concat('-s')
+            var form_input_element = $("#".concat(form_input_id))
+            if ( form_input_element.length == 0 ){
+              debug_text("invalid config file")
+              return
+            }
+            form_input_element.prop('value', value)
+            debug_text(file_name + " loaded");
+        });
+        }
+        fr.readAsText(files.item(0));
+    });
 
 	document.getElementById("reset_config").addEventListener("click", function(){
 		console.log("reset")
@@ -308,3 +318,16 @@ $(document).on('submit', function(){
 			}
 		})
 	});
+
+  function debug_text(str){
+    $("#console_output").html(str);
+  }
+
+  function IsJsonString(str) {
+    try {
+        JSON.parse(str);
+    } catch (e) {
+        return false;
+    }
+    return true;
+}

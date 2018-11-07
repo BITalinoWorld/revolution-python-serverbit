@@ -29,6 +29,7 @@ class Utils:
     USE_GUI = True
     sensor_data_json = ""
     labels = ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"]
+    app = None
 
     def add_quote(self, a):
         return '"{0}"'.format(a)

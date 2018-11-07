@@ -11,6 +11,9 @@
 			margin: 35px !important;
 			width: 50% !important;
 		}
+		.dev_selector{
+			width: 100%;
+		}
 		.button {
 				width: 30%;
 		}
@@ -64,20 +67,29 @@
         <table id="device-list" class="table"><!-- "id" attribute is required -->
             <tbody>
                 <tr class="device-list_var"><!-- .(id)_var -->
-                  <td><select class="dev_selector" id="mySelect_0">
+                  <td> <select class="dev_selector" id="mySelect_0">
 			             <option value="">Select New Device</option>
                         </select>
                     </td>
-                    <td><input type="text" name="textinput-s" id="device_0" placeholder='MAC address (select from dropdown)' ></td>
-                    <td><input type="text" name="textinput-s" id="devicetype_0" disabled=true data-clear-btn="true" ></td>
-                    <td class="del-area"><button class="device-list_del btn-default">Remove</button></td>
+                    <td width="30%"><input type="text" name="textinput-s" id="device_0" placeholder='MAC address (select from dropdown)' ></td>
+                    <td><input type="text" name="textinput-s" id="devicetype_0" disabled="true"></td>
+                    <td class="del-area"><button class="device-list_del">Remove</button></td>
                  </tr>
             </tbody>
         </table>
-        <input type="button" value="Add" class="device-list_add"><!-- .(id)_add -->
+				<table style=" width: 50%;">
+					<tbody>
+							<tr>
+        					<td style=" width: 50%;"><input type="button" value="Add Device" class="device-list_add"> </td>
+									<td style=" width: 50%;"><input type="button" value="Update Device List" id="update-device-list"> </td>
+								</td>
+							</tr>
+						</tbody>
+				</table>
 
 				<label for="device-s">{{crt_conf['device']}}</label>
-				<input name="textinput-s" id="device-s" disabled="true" placeholder="device list (select above)" type="text">
+				<input name="textinput-s" id="device-s" placeholder="device list (select above)" disabled="true" hidden="true" type="text">
+				<textarea name="name" id='dev_list_area' disabled="true" rows="8" cols="80"></textarea>
 
 		<label for="chnz-s"></label>
 		<fieldset id='chn_field' data-role="controlgroup" data-type="horizontal">

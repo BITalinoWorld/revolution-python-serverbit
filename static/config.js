@@ -9,7 +9,7 @@
       for (var i = 1; i <= inputs.length; i++){
         clicked(i)
       }
-      $("#device-s").prop("value", $("label[for='device-s']").html());
+      $("#device-s, #dev_list_area").prop("value", $("label[for='device-s']").html());
       $("label[for='device-s']").html("Device List");
       $("#chn_field, #lbl_field, .input_toggle").hide();
       $("#protocol-s, #ip_address-s, #port-s, label[for='ip_address-s'], label[for='port-s'], label[for='protocol-s'").show();
@@ -33,6 +33,9 @@
             new_dropdown.prop("id", new_dropdown_id);
             new_dropdown.change(function() {
                 update_device_type(document.getElementById(new_dropdown.attr("id")), new_id);
+            })
+            $(".device-list_del").click(function() {
+              console.log("pop")
             })
         }
     });
@@ -74,14 +77,18 @@
     $("#device_0").val("")
   }
 
-  function update_device_entry( addr ){
-    dev_entry.push(addr);
+  $("#update-device-list").click(function() {
+    dev_entry = []
+    for (i = 0; i < $("select.dev_selector").length; i++){
+      var addr = $("#device_"+i).val()
+      if (!dev_entry.includes(addr))
+        dev_entry.push(addr)
+    }
     dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
-    $("#device-s").prop('value', dev_entry);
-  }
+    $("#device-s, #dev_list_area").prop('value', JSON.stringify(dev_entry));
+  })
 
 	function update_device_type( d , d_id){
-    update_device_entry(d.value)
     var device_id = "device_".concat(d_id);
     var devicetype_id = "devicetype_".concat(d_id);
 		document.getElementById(device_id).value = d.value;
@@ -293,7 +300,7 @@ $(document).on('submit', function(){
             var form_input_element = $("#".concat(form_input_id))
             if ( form_input_element.length == 0 ){
               debug_text("invalid config file")
-              return
+              return 0
             }
             form_input_element.prop('value', value)
             debug_text(file_name + " loaded");

@@ -111,7 +111,7 @@ class DeviceUpdateHandler(web.RequestHandler):
     def post(self):
         print(self.request.body)
         ut.enable_servers = json.loads(self.request.body)
-        ut.enable_servers = ut.jsonToBool(ut.enable_servers)
+        # ut.enable_servers = ut.jsonToBool(ut.enable_servers)
 
     def open(self):
         self.write("device_list")

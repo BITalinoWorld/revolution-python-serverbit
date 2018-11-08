@@ -139,7 +139,8 @@ def findDevices(OS, enable_servers):
                 except Exception as e:
                     pass
         if enable_servers["OSC"]:
-            device_list.extend(riot.fetch_devices(enable_servers['OSC_config'][0], enable_servers['OSC_config'][1], 1))
+            ip, port = enable_servers['OSC_config'][0], enable_servers['OSC_config'][1]
+            device_list.extend(riot.fetch_devices(ip, port, 1))
             print(device_list)
 
     return device_list

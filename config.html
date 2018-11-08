@@ -55,7 +55,7 @@
 		<label for="bitalino_or_riot"></label>
 		<fieldset id='bitalino_or_riot_field' data-role="controlgroup" data-type="horizontal">
 			<legend></legend>
-					<input onclick="server_handler(this)" name="finder[]" id="BITalino_check" type="checkbox" checked>
+					<input onclick="server_handler(this)" name="finder[]" id="BITalino_check" type="checkbox">
 					<label for="BITalino_check">Bluetooth (BITalino)</label>
 					<input onclick="server_handler(this)" name="finder[]" id="Riot_check" type="checkbox">
 					<label for="Riot_check">OSC (R-IoT)</label>
@@ -88,7 +88,7 @@
 				</table>
 
 				<label for="device-s">{{crt_conf['device']}}</label>
-				<input name="textinput-s" id="device-s" placeholder="device list (select above)" disabled="true" hidden="true" type="text">
+				<input name="textinput-s" id="device-s" placeholder="device list (select above)" disabled="true" type="text">
 				<textarea name="name" id='dev_list_area' disabled="true" rows="8" cols="80"></textarea>
 
 		<label for="chnz-s"></label>
@@ -96,7 +96,7 @@
 			<legend>Channel Selection:</legend>
 				{% for chn in old_conf['channels'] %}
 					{% if chn in crt_conf['channels'] %}
-					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox" checked>
+					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox" checked="true">
 					{% else %}
 					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox">
 					{% end %}

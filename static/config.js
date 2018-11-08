@@ -3,13 +3,12 @@
     var num_devices = 1
 
     document.addEventListener('DOMContentLoaded', function() {
-      // update_device_list(dev_list)
       var f = document.getElementById("chn_field");
       var inputs = f.getElementsByTagName("input")
       for (var i = 1; i <= inputs.length; i++){
         clicked(i)
       }
-      $("#device-s, #dev_list_area").prop("value", $("label[for='device-s']").html());
+      $("#device-s").prop("value", $("label[for='device-s']").html()).change();
       $("label[for='device-s']").html("Device List");
       $("#chn_field, #lbl_field, .input_toggle").hide();
       $("#protocol-s, #ip_address-s, #port-s, label[for='ip_address-s'], label[for='port-s'], label[for='protocol-s'").show();
@@ -41,17 +40,17 @@
     });
 
 	function server_handler(device_finder) {
+    var str_out = ""
 		document.getElementById("find_devices").disabled = $('input[name="finder[]"]:checked').length == 0
 		if (device_finder.id === "BITalino_check")
-			if (device_finder.checked)
-				console.log("Initializing PLUX device finder")
-			else
-				console.log("Disable PLUX device finder")
+      if (device_finder.checked)
+        $("#chn_field, #lbl_field").show("fast");
+      else
+        $("#chn_field, #lbl_field").hide("fast");
+      var str_out = device_finder.checked ? "Initializing PLUX device finder" : "Disable PLUX device finder";
 		if (device_finder.id === "Riot_check")
-			if (device_finder.checked)
-				console.log("Initializing OSC server for R-IOT")
-			else
-				console.log("Disable OSC server for R-IOT")
+      var str_out = device_finder.checked ? "Initializing OSC server for R-IOT" : "Disable OSC server for R-IOT";
+    console.log(str_out)
 	}
 
 	function update_device_list(dl) {
@@ -85,7 +84,7 @@
         dev_entry.push(addr)
     }
     dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
-    $("#device-s, #dev_list_area").prop('value', JSON.stringify(dev_entry));
+    $("#device-s").prop('value', JSON.stringify(dev_entry)).change();
   })
 
 	function update_device_type( d , d_id){
@@ -93,10 +92,11 @@
     var devicetype_id = "devicetype_".concat(d_id);
 		document.getElementById(device_id).value = d.value;
 		document.getElementById(devicetype_id).value = d.options[d.selectedIndex].id;
-    if (document.getElementById(devicetype_id).value === "bitalino"){
-      $("#chn_field, #lbl_field, .input_toggle").show("fast");
-    }
 	}
+
+  $("#device-s").change(function() {
+    $("#dev_list_area").prop("value", $("#device-s").val())
+  })
 
 	var device_clicked = document.getElementById("mySelect_0");
     update_device_type(device_clicked, 0);
@@ -125,8 +125,8 @@
         e.stopImmediatePropagation();
         var device_list_url = 'http://localhost:9001/v1/devices'
 				var json_device_finder = {
-							"Bluetooth": $('input[name="finder[]"]')[0].checked.toString(),
-							"OSC": $('input[name="finder[]"]')[1].checked.toString(),
+							"Bluetooth": $('input[name="finder[]"]')[0].checked,
+							"OSC": $('input[name="finder[]"]')[1].checked,
               "OSC_config": ['192.168.1.100', 8888]
 						};
 				console.log(json_device_finder)
@@ -146,14 +146,11 @@
     });
 
 $(document).on('submit', function(){
-		$("select.dev_selector").each(function(){
-			var my_dropdown = document.getElementById((this.id).toString())
-			if (my_dropdown.value == ""){
-				alert("Please select a BITalino device in Device Selection")
-				window.location.href = 'http://localhost:9001/config'
-				return 0;
-			}
-		})
+		if ($("#device-s").attr("value") == ""){
+			alert("Please select a BITalino device in Device Selection and update device list")
+			window.location.href = 'http://localhost:9001/config'
+			return 0;
+		}
 		var entry_inputs = {}
 		var lbz = []
 		var chnz = []
@@ -298,11 +295,32 @@ $(document).on('submit', function(){
         $.each(result, function (key, value) {
             var form_input_id = key.toString().concat('-s')
             var form_input_element = $("#".concat(form_input_id))
+            console.log(form_input_element)
+            if (key === "channels"){
+              var f = document.getElementById("chn_field");
+              var chns = f.getElementsByTagName("input")
+              chns = Array.prototype.slice.call(chns);
+              chns.forEach(function(chn) {
+                if (chn.checked) chn.click()
+              })
+              value.forEach(function(chn_num) {
+                chns[chn_num-1].click()
+                clicked(chn_num)
+              })
+            }
+            if (key === "labels"){
+              var f = document.getElementById("lbl_field");
+              var lbls = f.getElementsByTagName("input")
+              lbls = Array.prototype.slice.call(lbls);
+              for (var i = 0; i < value.length; i++) {
+                lbls[i].value = value[i]
+              }
+            }
             if ( form_input_element.length == 0 ){
               debug_text("invalid config file")
               return 0
             }
-            form_input_element.prop('value', value)
+            form_input_element.prop('value', value).change();
             debug_text(file_name + " loaded");
         });
         }

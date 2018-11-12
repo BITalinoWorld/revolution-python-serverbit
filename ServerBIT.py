@@ -46,6 +46,9 @@ class Utils:
             json[key] = self.strToBool(bool)
         return json
 
+    def stringToArray(self, str):
+        return '['+str+']'
+
 ut = Utils()
 
 def tostring(data):
@@ -70,12 +73,15 @@ def tostring(data):
 
     return str(data)
 
-def change_json_value(file,orig,new):
+def change_json_value(file,orig,new,isFinal):
     ##find and replace string in file, keeps formatting
-    #print(file, orig, new)
+    # print(file, orig, new)
+    isComma = ','
+    if isFinal: isComma = ''
+    print(isComma)
     for line in fileinput.input(file, inplace=1):
         if orig in line:
-            line = line.replace(orig, new)
+            line = line.replace(str(line.split(': ')[1]), str(new.split(': ')[1]) + "%s\n" % isComma)
         sys.stdout.write(line)
 
 class Index(web.RequestHandler):
@@ -140,26 +146,6 @@ class DeviceUpdateHandler(web.RequestHandler):
             cl.remove(self)
         print("DISCONNECTED")
 
-class DeviceFinderHandler(web.RequestHandler):
-    def check_origin(self, origin):
-        return True
-
-    def open(self):
-        print("CONNECTED")
-
-    def post(self):
-        print(self.request.body)
-        ut.enable_servers = json.loads(self.request.body)
-        ut.enable_servers = ut.jsonToBool(ut.enable_servers)
-
-    def on_message(self, message):
-        self.write_message(u"You said: " + message)
-
-    def on_close(self):
-        if self in cl:
-            cl.remove(self)
-        print("DISCONNECTED")
-
 class Configs(web.RequestHandler):
     def get(self):
         self.write(conf_json)
@@ -173,14 +159,19 @@ class Configs(web.RequestHandler):
         for key, old_value in conf_json.items():
             format = str('"' + key + '": ')
             new_value = format + str(new_config[key])
-            if "device" in key or "protocol" in key or "ip_address" in key:
+            #string attribute
+            if "protocol" in key or "ip_address" in key:
                 old_value = format + ut.add_quote(str(old_value))
+            #list of strings
+            if "labels" in key:
+                 old_value = format + str(old_value).replace("'", '"')
+                 new_value = format + str(new_config[key]).replace("'", '"')
             else:
                 old_value = format + str(old_value)
             if new_value not in old_value:
                 print (old_value)
                 print ("writing to json:" + new_value)
-                change_json_value(json_file_path, old_value, str(new_value))
+                change_json_value(json_file_path, format, str(new_value), "port" in key)
         time.sleep(1)
         osx_statusbar_app.restart()
 
@@ -204,7 +195,7 @@ def listDevices(enable_servers):
     return allDevices
 
 def BITalino_handler(mac_addr, ch_mask, srate, labels):
-    new_mac_addr = check_device_addr(mac_addr)
+    new_mac_addr = check_device_addr(mac_addr[0])
     print('LISTENING')
     #labels = ["'nSeq'", "'I1'", "'I2'", "'O1'", "'O2'", "'A1'", "'A2'", "'A3'", "'A4'", "'A5'", "'A6'"]
     ch_mask = numpy.array(ch_mask) - 1
@@ -238,7 +229,7 @@ def check_device_addr(addr):
     return addr
 
 settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
-app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/finders', DeviceFinderHandler), (r'/v1/configs', Configs)], **settings)
+app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler),  (r'/v1/configs', Configs)], **settings)
 
 if __name__ == '__main__':
     ut.OS = platform.system()

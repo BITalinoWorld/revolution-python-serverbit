@@ -87,7 +87,7 @@
 						</tbody>
 				</table>
 
-				<label for="device-s">"{{crt_conf['device']}}"</label>
+				<label for="device-s">{{crt_conf['device']}}</label>
 				<input name="textinput-s" id="device-s" placeholder="Empty - select device(s) above and click 'Update Device List'" disabled="true" type="text">
 				<textarea name="name" id='dev_list_area' disabled="true" placeholder="Empty - select device(s) above and click 'Update Device List'" rows="8" cols="80"></textarea>
 
@@ -100,17 +100,17 @@
 					{% else %}
 					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox">
 					{% end %}
-					<label for="ch{{chn}}">Channel A{{chn}}</label>
+					<label for="ch{{chn}}" class='buttonLbl'>Channel {{crt_conf['labels'][5:][chn-1]}}</label>
 				{% end %}
 		</fieldset>
 		<label for="lblz-s"></label>
 		<fieldset id='lbl_field' data-role="controlgroup" data-type="horizontal">
 			<legend>Label Selection:</legend>
-				{% for chn in old_conf['labels'][:5] %}
+				{% for chn in crt_conf['labels'][:5] %}
 				<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}'>
 				{% end %}
-				{% for chn in old_conf['labels'][5:] %}
-				<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
+				{% for chn in crt_conf['labels'][5:] %}
+				<input name="chk{{chn}}" id="lb{{chn}}" class="lbToggle" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
 				{% end %}
 		</fieldset>
 

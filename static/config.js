@@ -71,7 +71,7 @@
 		$('.hideable_img').hide('slow');
 	}
 
-  if ($("#device-s").val() === '"WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"'){
+  if ($("#device-s").val() === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
     $("#device-s").val("")
     $("#device_0").val("")
   }
@@ -84,7 +84,7 @@
         dev_entry.push(addr)
     }
     dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
-    $("#device-s").prop('value', dev_entry.toString()).change();
+    $("#device-s").prop('value', arrayToString(dev_entry.toString())).change();
   })
 
 	function update_device_type( d , d_id){
@@ -95,7 +95,7 @@
 	}
 
   $("#device-s").change(function() {
-    if ($("#device-s").val() === '"WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"'){
+    if ($("#device-s").val() === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
       $("#device-s").val("")
       $("#device_0").val("")
     }
@@ -110,9 +110,11 @@
 
 	function clicked(buttonNumber){
 		if($('#ch'+buttonNumber).prop('checked')){
-			$('#lbA'+buttonNumber).textinput('enable')
+      $('#'+$(".lbToggle")[buttonNumber-1].id).textinput('enable')
+			// $('#lbA'+buttonNumber).textinput('enable')
 		} else {
-			$('#lbA'+buttonNumber).textinput('disable')
+      $('#'+$(".lbToggle")[buttonNumber-1].id).textinput('disable')
+			// $('#lbA'+buttonNumber).textinput('disable')
 		}
 	}
 
@@ -151,7 +153,7 @@
 
   $(document).on('submit', function(){
       var dev_str = $("#device-s").val()
-      if (dev_str == "" || (dev_str[0] != '"' && dev_str[dev_str.length - 1] != '"')){
+      if (dev_str == "" || (dev_str[0] != '[' && dev_str[dev_str.length - 1] != ']')){
   			alert("Please select a BITalino device in Device Selection and update device list")
   			window.location.href = 'http://localhost:9001/config'
   			return 0;
@@ -161,10 +163,10 @@
   		var chnz = []
 
   		var f = document.getElementById("lbl_field");
-  		var inputs = f.getElementsByTagName("input")
+  		var inputs = f.getElementsByTagName("input");
   		for (var i = 0; i < inputs.length; i++){
+        lbz.push(inputs[i].value.replace(/'/g, '"'));
   			if (!inputs[i].disabled){
-  				lbz.push(inputs[i].value)
   				if (i > 4){
   					chnz.push( i-4 )
   				}
@@ -234,7 +236,7 @@
         $.each(result, function (key, value) {
             var form_input_id = key.toString().concat('-s')
             var form_input_element = $("#".concat(form_input_id))
-            console.log(form_input_element)
+            // console.log(form_input_element)
             if (key === "channels"){
               var f = document.getElementById("chn_field");
               var chns = f.getElementsByTagName("input")
@@ -253,6 +255,8 @@
               lbls = Array.prototype.slice.call(lbls);
               for (var i = 0; i < value.length; i++) {
                 lbls[i].value = value[i]
+                var buttonLbl = 'ch'+(i+1);
+                $("label[for='"+buttonLbl+"']").html("Channel "+value[i+5])
               }
             }
             if ( form_input_element.length == 0 ){
@@ -260,6 +264,10 @@
               return 0
             }
             form_input_element.prop('value', value).change();
+            if (key === "device"){
+              console.log(value)
+              $("#device-s").prop('value', JSON.stringify(value)).change();
+            }
             debug_text(file_name + " loaded");
         });
         }

@@ -44,9 +44,9 @@
 		document.getElementById("find_devices").disabled = $('input[name="finder[]"]:checked').length == 0
 		if (device_finder.id === "BITalino_check")
       if (device_finder.checked)
-        $("#chn_field, #lbl_field").show("fast");
+        $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").show("fast");
       else
-        $("#chn_field, #lbl_field").hide("fast");
+        $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").hide("fast");
       var str_out = device_finder.checked ? "Initializing PLUX device finder" : "Disable PLUX device finder";
 		if (device_finder.id === "Riot_check")
       var str_out = device_finder.checked ? "Initializing OSC server for R-IOT" : "Disable OSC server for R-IOT";
@@ -71,7 +71,7 @@
 		$('.hideable_img').hide('slow');
 	}
 
-  if ($("#device-s").val() === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
+  if ($("#device-s").val() === '"WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"'){
     $("#device-s").val("")
     $("#device_0").val("")
   }
@@ -84,7 +84,7 @@
         dev_entry.push(addr)
     }
     dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
-    $("#device-s").prop('value', JSON.stringify(dev_entry)).change();
+    $("#device-s").prop('value', dev_entry.toString()).change();
   })
 
 	function update_device_type( d , d_id){
@@ -95,6 +95,10 @@
 	}
 
   $("#device-s").change(function() {
+    if ($("#device-s").val() === '"WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"'){
+      $("#device-s").val("")
+      $("#device_0").val("")
+    }
     $("#dev_list_area").prop("value", $("#device-s").val())
   })
 
@@ -145,80 +149,13 @@
             });
     });
 
-$(document).on('submit', function(){
-		if ($("#device-s").attr("value") == ""){
-			alert("Please select a BITalino device in Device Selection and update device list")
-			window.location.href = 'http://localhost:9001/config'
-			return 0;
-		}
-		var entry_inputs = {}
-		var lbz = []
-		var chnz = []
-
-		var f = document.getElementById("lbl_field");
-		var inputs = f.getElementsByTagName("input")
-		for (var i = 0; i < inputs.length; i++){
-			if (!inputs[i].disabled){
-				lbz.push(inputs[i].value)
-				if (i > 4){
-					chnz.push( i-4 )
-				}
-			}
-		}
-		console.log(chnz.slice(5))
-
-		var fields = document.getElementById("config").querySelectorAll("label");
-		for (var i = 0; i <= fields.length; i++){
-			if (typeof fields[i] !== 'undefined') {
-				var key = fields[i].htmlFor
-				if (hasNumber(key) == false && key.slice(-2) === '-s'){
-					var input = document.getElementById(key);
-					if (input !== null){
-						// console.log(input.value)
-						entry_inputs[key] = input.value
-					}
-				}
-			}
-		}
-		console.log(entry_inputs)
-
-		json_entry_inputs = {
-			"device": entry_inputs["device-s"],
-			"sampling_rate": entry_inputs["sampling_rate-s"],
-			"buffer_size": entry_inputs["buffer_size-s"],
-			"ip_address": entry_inputs["ip_address-s"],
-			"port": entry_inputs["port-s"],
-			"protocol": entry_inputs["protocol-s"],
-			"channels": chnz,
-			"labels": lbz
-		};
-
-		$.ajax({
-			type: "POST",
-			url: 'http://localhost:9001/v1/configs',
-			async: 'true',
-			data: JSON.stringify(json_entry_inputs),
-			// data: '{"device": "'+dev+'", "sampling_rate":'+fs+', "buffer_size":'+bs+', "port":'+port+', "labels":"'+lbz+'", "channels":"'+ chnz +'"}',
-			success: function (result) {
-				alert("redirecting to ClientBIT")
-				window.location.href = 'http://localhost:9001/v1/configs'
-			},
-			error: function (request,error) {
-				// This callback function will trigger on unsuccessful action
-				alert(request.responseText);
-			}
-		})
-	});
-
   $(document).on('submit', function(){
-  		$("select.dev_selector").each(function(){
-  			var my_dropdown = document.getElementById((this.id).toString())
-  			if (my_dropdown.value == ""){
-  				alert("Please select a BITalino device in Device Selection")
-  				window.location.href = 'http://localhost:9001/config'
-  				return 0;
-  			}
-  		})
+      var dev_str = $("#device-s").val()
+      if (dev_str == "" || (dev_str[0] != '"' && dev_str[dev_str.length - 1] != '"')){
+  			alert("Please select a BITalino device in Device Selection and update device list")
+  			window.location.href = 'http://localhost:9001/config'
+  			return 0;
+  		}
   		var entry_inputs = {}
   		var lbz = []
   		var chnz = []
@@ -233,7 +170,7 @@ $(document).on('submit', function(){
   				}
   			}
   		}
-  		console.log(chnz.slice(5))
+  		console.log(lbz)
 
   		var fields = document.getElementById("config").querySelectorAll("label");
   		for (var i = 0; i <= fields.length; i++){
@@ -254,12 +191,13 @@ $(document).on('submit', function(){
   			"device": entry_inputs["device-s"],
   			"sampling_rate": entry_inputs["sampling_rate-s"],
   			"buffer_size": entry_inputs["buffer_size-s"],
-  			"ip_address": entry_inputs["ip_address-s"],
+  			"ip_address": JSON.stringify(entry_inputs["ip_address-s"]),
   			"port": entry_inputs["port-s"],
   			"protocol": entry_inputs["protocol-s"],
   			"channels": chnz,
   			"labels": lbz
   		};
+      console.log(json_entry_inputs["ip_address"])
 
   		$.ajax({
   			type: "POST",
@@ -268,12 +206,13 @@ $(document).on('submit', function(){
   			data: JSON.stringify(json_entry_inputs),
   			// data: '{"device": "'+dev+'", "sampling_rate":'+fs+', "buffer_size":'+bs+', "port":'+port+', "labels":"'+lbz+'", "channels":"'+ chnz +'"}',
   			success: function (result) {
-  				alert("redirecting to ClientBIT")
+  				// alert("redirecting to ClientBIT")
   				window.location.href = 'http://localhost:9001/v1/configs'
   			},
   			error: function (request,error) {
   				// This callback function will trigger on unsuccessful action
   				alert(request.responseText);
+          window.location.href = 'http://localhost:9001/v1/'
   			}
   		})
   	});
@@ -346,6 +285,10 @@ $(document).on('submit', function(){
 
   function debug_text(str){
     $("#console_output").html(str);
+  }
+
+  function arrayToString(array) {
+    return '['.concat(array).concat(']')
   }
 
   function IsJsonString(str) {

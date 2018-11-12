@@ -87,9 +87,9 @@
 						</tbody>
 				</table>
 
-				<label for="device-s">{{crt_conf['device']}}</label>
-				<input name="textinput-s" id="device-s" placeholder="device list (select above)" disabled="true" type="text">
-				<textarea name="name" id='dev_list_area' disabled="true" rows="8" cols="80"></textarea>
+				<label for="device-s">"{{crt_conf['device']}}"</label>
+				<input name="textinput-s" id="device-s" placeholder="Empty - select device(s) above and click 'Update Device List'" disabled="true" type="text">
+				<textarea name="name" id='dev_list_area' disabled="true" placeholder="Empty - select device(s) above and click 'Update Device List'" rows="8" cols="80"></textarea>
 
 		<label for="chnz-s"></label>
 		<fieldset id='chn_field' data-role="controlgroup" data-type="horizontal">
@@ -119,7 +119,7 @@
 			<label class="input_toggle" for={{key}}-s>{{key}}</label>
 				{% if 'protocol' in key %}
 				<select id="{{key}}-s">
-					<!-- <option value="" selected disabled hidden>{{crt_conf[key]}}</option> -->
+					<option value="" selected disabled hidden>{{crt_conf[key]}}</option>
 					<option value='"Websockets"'>Websockets</option>
 					<option value='"OSC"'>OSC</option>
 				</select>

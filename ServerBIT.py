@@ -3,7 +3,6 @@ from tornado import websocket, web, ioloop
 import _thread as thread
 import json
 import signal
-import sys
 import numpy
 import time
 import sys, traceback, os
@@ -13,6 +12,8 @@ from os.path import expanduser
 import deviceFinder as deviceFinder
 import fileinput, time
 from shutil import copyfile
+
+import osx_statusbar_app
 
 cl = []
 conf_json = {}
@@ -24,12 +25,12 @@ conf_port = 9001
 
 class Utils:
     OS = None
-    enable_servers = {"BITalino": 'true', "Riot": 'false'}
     BITalino_device = None
-    USE_GUI = True
     sensor_data_json = ""
     labels = ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"]
-    app = None
+    enable_servers = {"BITalino": False, "Riot": False,
+                        "OSC_config": ["192.168.1.100", 8888]}
+
 
     def add_quote(self, a):
         return '"{0}"'.format(a)
@@ -71,14 +72,16 @@ def tostring(data):
 
 def change_json_value(file,orig,new):
     ##find and replace string in file, keeps formatting
-    # print(file, orig, new)
+    #print(file, orig, new)
     for line in fileinput.input(file, inplace=1):
         if orig in line:
             line = line.replace(orig, new)
         sys.stdout.write(line)
 
 class Index(web.RequestHandler):
+
     def get(self):
+        print("config page opened")
         self.render("config.html",
             crt_conf = json.load(open(json_file_path, 'r')),
             old_conf = json.load(open('./static/bit_config.json', 'r')),
@@ -159,10 +162,9 @@ class DeviceFinderHandler(web.RequestHandler):
 
 class Configs(web.RequestHandler):
     def get(self):
-    	self.write(conf_json)
+        self.write(conf_json)
 
     def post(self):
-        # print(self.request.body)
         new_config = json.loads(self.request.body)
         if "restored config.json" in new_config:
             print("resetting")
@@ -171,7 +173,7 @@ class Configs(web.RequestHandler):
         for key, old_value in conf_json.items():
             format = str('"' + key + '": ')
             new_value = format + str(new_config[key])
-            if "device" in key or "protocol" in key:
+            if "device" in key or "protocol" in key or "ip_address" in key:
                 old_value = format + ut.add_quote(str(old_value))
             else:
                 old_value = format + str(old_value)
@@ -179,7 +181,8 @@ class Configs(web.RequestHandler):
                 print (old_value)
                 print ("writing to json:" + new_value)
                 change_json_value(json_file_path, old_value, str(new_value))
-        # sys.exit(1)
+        time.sleep(1)
+        osx_statusbar_app.restart()
 
 def signal_handler(signal, frame):
     print('TERMINATED')
@@ -247,7 +250,7 @@ if __name__ == '__main__':
             conf_json = json.load(data_file)
             json_file_path = home + '/config.json'
     except Exception as e:
-        # print(e)
+        print(e)
         with open('config.json') as data_file:
             conf_json = json.load(data_file)
             os.mkdir(home)

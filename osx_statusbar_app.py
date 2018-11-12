@@ -2,6 +2,11 @@ import rumps
 import webbrowser
 import os
 
+def restart():
+    os.popen("./start_mac.sh")
+    # os.popen("pkill -f ServerBIT")
+    rumps.quit_application()
+
 def init_rumps_osx():
     class ServerBIT_statusbar_app(rumps.App):
         def __init__(self):

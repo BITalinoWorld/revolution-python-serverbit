@@ -4,12 +4,12 @@ import _thread as thread
 import json
 import signal
 import numpy
-import time
-import sys, traceback, os
+import sys, traceback, os, time
 from bitalino import *
 from os.path import expanduser
 
 import deviceFinder as deviceFinder
+from riot_finder import riot_net_config as net
 import fileinput, time
 from shutil import copyfile
 
@@ -91,6 +91,7 @@ class Index(web.RequestHandler):
         self.render("config.html",
             crt_conf = json.load(open(json_file_path, 'r')),
             old_conf = json.load(open('./static/bit_config.json', 'r')),
+            console_text = "ServerBIT Configuration"
             )
 
     def on_message(self, message):
@@ -120,7 +121,6 @@ class DeviceUpdateHandler(web.RequestHandler):
     def post(self):
         print(self.request.body)
         ut.enable_servers = json.loads(self.request.body)
-        # ut.enable_servers = ut.jsonToBool(ut.enable_servers)
 
     def open(self):
         self.write("device_list")
@@ -145,6 +145,41 @@ class DeviceUpdateHandler(web.RequestHandler):
         if self in cl:
             cl.remove(self)
         print("DISCONNECTED")
+
+class WebConsoleHandler(websocket.WebSocketHandler):
+    def get(self):
+        riot_interface_type = None
+        riot_ssid = "PLUX"
+        riot_ip = '192.168.1.100'
+        console_str=""
+        # -2.1- get network interface and ssid & assign module ip
+        time.sleep(1)
+        net_interface_type, ssid = net.detect_net_config(riot_interface_type, ut.OS)
+        if ssid is None:
+            console_str = "Please connect to a WiFi network and try again"
+            self.write( json.dumps(console_str) )
+            return
+        # -2.2- get serverBIT host ipv4 address
+        ipv4_addr = net.detect_ipv4_address(net_interface_type, ut.OS)
+
+        # -2.3- check host ssid matches that assigned to the R-IoT module
+        if ssid not in riot_ssid:
+            print ('{:^24s}'.format("====================="))
+            console_str = "currently connected to '%s', please connect to the same network as the R-IoT (%s)" % (ssid, riot_ssid)
+            self.write( json.dumps(console_str) )
+            return
+
+        # -2.4- change host ipv4 to match the R-IoT module if required
+        if riot_ip not in ipv4_addr:
+            console_str = ("The computer's IPv4 address must be changed to match")
+            time.sleep(1)
+            console_str = net.reconfigure_ipv4_address(riot_ip, ipv4_addr, net_interface_type, ut.OS)
+
+        self.write( json.dumps(console_str) )
+
+    def post(self):
+        riot_finder.run_ifconfig_command (json.loads(self.request.body))
+        self.write(json.dumps("ipv4 address set to"))
 
 class Configs(web.RequestHandler):
     def get(self):
@@ -229,7 +264,7 @@ def check_device_addr(addr):
     return addr
 
 settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
-app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler),  (r'/v1/configs', Configs)], **settings)
+app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/console', WebConsoleHandler), (r'/v1/configs', Configs)], **settings)
 
 if __name__ == '__main__':
     ut.OS = platform.system()

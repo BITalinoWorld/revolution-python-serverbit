@@ -212,13 +212,15 @@ async def webApp(ws, path):
 # -3- stream device data to network
 def fetch_devices(listener_ip, listener_port, find_new):
     osc_devices = []
+    max_counter = 0
     try:
         thread.start_new_thread(start_riot_listener, (listener_ip, listener_port)) # one thread to listen to all devices on the same ip & port
         while not ut.osc_server_started : time.sleep(0.1)
         if find_new == 1: timer(5, text="searching for devices on this network")
-        while ut.device_data[0] == "" or len(ut.device_ids) == 0:
+        while ut.device_data[0] == "" or len(ut.device_ids) == 0 or max_counter < 2:
             print ("no devices found")
             timer(5, text="searching for devices on this network")
+            max_counter+=1
         print ("found %i device(s)" % len(ut.device_ids))
         for device_id in ut.device_ids:
             osc_devices.append([str(device_id), "R-Iot (OSC)"])

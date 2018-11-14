@@ -1,8 +1,10 @@
     var dev_list = {}
     var dev_entry = []
     var num_devices = 1
+    var terminal_cmd = ""
 
     document.addEventListener('DOMContentLoaded', function() {
+      $("#continue").hide()
       var f = document.getElementById("chn_field");
       var inputs = f.getElementsByTagName("input")
       for (var i = 1; i <= inputs.length; i++){
@@ -33,9 +35,6 @@
             new_dropdown.change(function() {
                 update_device_type(document.getElementById(new_dropdown.attr("id")), new_id);
             })
-            $(".device-list_del").click(function() {
-              console.log("pop")
-            })
         }
     });
 
@@ -47,9 +46,13 @@
         $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").show("fast");
       else
         $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").hide("fast");
-      var str_out = device_finder.checked ? "Initializing PLUX device finder" : "Disable PLUX device finder";
+      var str_out = device_finder.checked ? "Initializing PLUX device finder" : "Disabled PLUX device finder";
 		if (device_finder.id === "Riot_check")
-      var str_out = device_finder.checked ? "Initializing OSC server for R-IOT" : "Disable OSC server for R-IOT";
+      var str_out = device_finder.checked ? "Initializing OSC server for R-IOT" : "Disabled OSC server for R-IOT";
+      if (device_finder.checked)
+        start_osc_server()
+      else
+        debug_text(str_out, false);
     console.log(str_out)
 	}
 
@@ -126,6 +129,41 @@
   	     return myString.concat(id.toString());
 	}
 
+  function start_osc_server() {
+    debug_text("Initializing OSC server for R-IOT", true);
+    var web_console_url = 'http://localhost:9001/v1/console'
+    $.ajax({
+        url: web_console_url,
+        type: 'GET',
+        async: 'true',
+        dataType: 'json',
+        success:function(data){
+          debug_text(data, true);
+        },
+        error: function (request,error) {
+          debug_text(error);
+        }
+    });
+  }
+
+  $("#continue").click(function (e) {
+    var web_console_url = 'http://localhost:9001/v1/console'
+    cmd = JSON.stringify( $("#console_output").val() )
+    $.ajax({
+        url: web_console_url,
+        type: 'POST',
+        async: 'true',
+        dataType: 'json',
+        data: cmd,
+        success:function(data){
+          debug_text(data, true);
+        },
+        error: function (request,error) {
+          debug_text(error);
+        }
+      });
+  });
+
 	$("#find_devices").click(function (e) {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -141,10 +179,12 @@
 						type: 'POST',
 						async: 'true',
 						dataType: 'json',
-						data: JSON.stringify(json_device_finder)
+						data: JSON.stringify(json_device_finder),
+            error: function (request,error) {
+              debug_text(error);
+            }
 				});
 				$('#loading_anim').show('fast');
-
         $.getJSON(device_list_url).done( function (response) {
                     dev_list = response['dev_list'];
                     update_device_list(dev_list);
@@ -208,11 +248,9 @@
   			data: JSON.stringify(json_entry_inputs),
   			// data: '{"device": "'+dev+'", "sampling_rate":'+fs+', "buffer_size":'+bs+', "port":'+port+', "labels":"'+lbz+'", "channels":"'+ chnz +'"}',
   			success: function (result) {
-  				// alert("redirecting to ClientBIT")
   				window.location.href = 'http://localhost:9001/v1/configs'
   			},
   			error: function (request,error) {
-  				// This callback function will trigger on unsuccessful action
   				alert(request.responseText);
           window.location.href = 'http://localhost:9001/v1/'
   			}
@@ -291,8 +329,12 @@
 		})
 	});
 
-  function debug_text(str){
-    $("#console_output").html(str);
+  function debug_text(str, show_btn=false){
+    $("#console_output").val(str);
+    if (show_btn)
+      $("#continue").show()
+    else
+      $("#continue").hide()
   }
 
   function arrayToString(array) {

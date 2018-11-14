@@ -7,8 +7,9 @@
     <script language="javascript"  src="static/jquery.add-input-area.min.js"></script>
 	<style>
 
-		#config, #reset_config, #import_file{
-			margin: 35px !important;
+		#config, #reset_config, #import_file, #console{
+			margin-left: 35px !important;
+			margin-bottom: 25px !important;
 			width: 50% !important;
 		}
 		.dev_selector{
@@ -24,6 +25,19 @@
 			margin: 35px;
 			width: 50%;
 	  	display: inline-block;
+		}
+		#console_output{
+			margin: 0;
+			background-color: #36454f;
+			color: lightblue;
+			font-family: monospace;
+			display: inline-block;
+		}
+		#continue{
+			padding: 0;
+			border-top-style: none;
+			border-bottom-bottom: none;
+			margin: 0;
 		}
 		#chn_field{
 			min-width: 366px;
@@ -42,12 +56,14 @@
 	</style>
 </head>
 <body>
-
+	<div id="console">
+		<textarea data-role="none" rows="2" cols="55" id="console_output" disabled="true">{{console_text}}</textarea>
+		<button align="right" data-role="none" id="continue" type="button">Continue</button>
+	</div>
 	<div id="import_file">
 		<label>Import config file (optional)</label>
 		<input type="file" id="select_json_file" value="Import" />
-		<button id="import_json">Import</button>
-		<p id="console_output"></p>
+		<button data-role="none" id="import_json">Import</button>
 	</div>
 	<form id="config">
 		<!-- <label> </label> -->
@@ -67,13 +83,13 @@
         <table id="device-list" class="table"><!-- "id" attribute is required -->
             <tbody>
                 <tr class="device-list_var"><!-- .(id)_var -->
-                  <td> <select class="dev_selector" id="mySelect_0">
+                  <td> <select data-role="none" class="dev_selector" id="mySelect_0">
 			             <option value="">Select New Device</option>
                         </select>
                     </td>
-                    <td width="30%"><input type="text" name="textinput-s" id="device_0" placeholder='MAC address (select from dropdown)' ></td>
-                    <td><input type="text" name="textinput-s" id="devicetype_0" disabled="true"></td>
-                    <td class="del-area"><button class="device-list_del">Remove</button></td>
+                    <td width="30%"><input data-role="none" type="text" name="textinput-s" id="device_0" placeholder='MAC address (select from dropdown)' ></td>
+                    <td><input data-role="none" type="text" name="textinput-s" id="devicetype_0" disabled="true"></td>
+                    <td class="del-area"><button data-role="none" class="device-list_del">Remove</button></td>
                  </tr>
             </tbody>
         </table>
@@ -88,7 +104,7 @@
 				</table>
 
 				<label for="device-s">{{crt_conf['device']}}</label>
-				<input name="textinput-s" id="device-s" placeholder="Empty - select device(s) above and click 'Update Device List'" disabled="true" type="text">
+				<input name="textinput-s" id="device-s" placeholder="Empty - select device(s) above and click 'Update Device List'" disabled="true" hidden="true" type="text">
 				<textarea name="name" id='dev_list_area' disabled="true" placeholder="Empty - select device(s) above and click 'Update Device List'" rows="8" cols="80"></textarea>
 
 		<label for="chnz-s"></label>

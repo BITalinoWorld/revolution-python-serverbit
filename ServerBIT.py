@@ -9,7 +9,7 @@ from bitalino import *
 from os.path import expanduser
 
 import deviceFinder as deviceFinder
-from riot_finder import riot_net_config as net
+from riot_finder import *
 import fileinput, time
 from shutil import copyfile
 
@@ -28,6 +28,9 @@ class Utils:
     BITalino_device = None
     sensor_data_json = ""
     labels = ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"]
+    riot_ip = '192.168.1.100'
+    ipv4_addr = ''
+    net_interface_type = None
     enable_servers = {"BITalino": False, "Riot": False,
                         "OSC_config": ["192.168.1.100", 8888]}
 
@@ -148,19 +151,19 @@ class DeviceUpdateHandler(web.RequestHandler):
 
 class WebConsoleHandler(websocket.WebSocketHandler):
     def get(self):
+        net = riot_net_config(ut.OS)
         riot_interface_type = None
         riot_ssid = "PLUX"
-        riot_ip = '192.168.1.100'
         console_str=""
         # -2.1- get network interface and ssid & assign module ip
         time.sleep(1)
-        net_interface_type, ssid = net.detect_net_config(riot_interface_type, ut.OS)
+        net_interface_type, ssid = net.detect_net_config(riot_interface_type)
         if ssid is None:
             console_str = "Please connect to a WiFi network and try again"
             self.write( json.dumps(console_str) )
             return
         # -2.2- get serverBIT host ipv4 address
-        ipv4_addr = net.detect_ipv4_address(net_interface_type, ut.OS)
+        ipv4_addr = net.detect_ipv4_address(net_interface_type)
 
         # -2.3- check host ssid matches that assigned to the R-IoT module
         if ssid not in riot_ssid:
@@ -170,16 +173,26 @@ class WebConsoleHandler(websocket.WebSocketHandler):
             return
 
         # -2.4- change host ipv4 to match the R-IoT module if required
-        if riot_ip not in ipv4_addr:
-            console_str = ("The computer's IPv4 address must be changed to match")
-            time.sleep(1)
-            console_str = net.reconfigure_ipv4_address(riot_ip, ipv4_addr, net_interface_type, ut.OS)
+        if ut.riot_ip not in ipv4_addr:
+            console_str = ("The computer's IPv4 address must be changed to match \nrun the following command to reconfigure your wireless settings ||| Continue")
+            ut.ipv4_addr = ipv4_addr
+            ut.net_interface_type = net_interface_type
 
         self.write( json.dumps(console_str) )
 
     def post(self):
-        riot_finder.run_ifconfig_command (json.loads(self.request.body))
-        self.write(json.dumps("ipv4 address set to"))
+        net = riot_net_config(ut.OS)
+        console_return = json.loads(self.request.body)
+        if "Continue" in console_return["msg"]:
+            console_str = net.reconfigure_ipv4_address(ut.riot_ip, ut.ipv4_addr, ut.net_interface_type)
+            console_str += " ||| Run Command"
+            self.write( json.dumps(console_str) )
+            return
+
+        if "Run Command" in console_return["msg"]:
+            console_str = riot_net_config.run_ifconfig_command (console_return["cmd"])
+            self.write(json.dumps(console_str))
+            return
 
 class Configs(web.RequestHandler):
     def get(self):

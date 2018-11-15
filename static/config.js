@@ -41,18 +41,19 @@
 	function server_handler(device_finder) {
     var str_out = ""
 		document.getElementById("find_devices").disabled = $('input[name="finder[]"]:checked').length == 0
-		if (device_finder.id === "BITalino_check")
+		if (device_finder.id === "BITalino_check"){
       if (device_finder.checked)
         $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").show("fast");
       else
         $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").hide("fast");
       var str_out = device_finder.checked ? "Initializing PLUX device finder" : "Disabled PLUX device finder";
-		if (device_finder.id === "Riot_check")
+      debug_text("", false)
+    }
+    if (device_finder.id === "Riot_check"){
       var str_out = device_finder.checked ? "Initializing OSC server for R-IOT" : "Disabled OSC server for R-IOT";
       if (device_finder.checked)
         start_osc_server()
-      else
-        debug_text(str_out, false);
+    }
     console.log(str_out)
 	}
 
@@ -130,7 +131,7 @@
 	}
 
   function start_osc_server() {
-    debug_text("Initializing OSC server for R-IOT", true);
+    debug_text("Initializing OSC server for R-IOT");
     var web_console_url = 'http://localhost:9001/v1/console'
     $.ajax({
         url: web_console_url,
@@ -138,7 +139,11 @@
         async: 'true',
         dataType: 'json',
         success:function(data){
-          debug_text(data, true);
+          data = data.split(" ||| ")
+          if (data.length > 1)
+            debug_text(data[0], data[1], true);
+          else
+            debug_text(data[0])
         },
         error: function (request,error) {
           debug_text(error);
@@ -148,15 +153,22 @@
 
   $("#continue").click(function (e) {
     var web_console_url = 'http://localhost:9001/v1/console'
-    cmd = JSON.stringify( $("#console_output").val() )
+    var console_return = {
+          "msg": $("#continue").html(),
+          "cmd": $("#console_output").val(),
+        };
     $.ajax({
         url: web_console_url,
         type: 'POST',
         async: 'true',
         dataType: 'json',
-        data: cmd,
+        data: JSON.stringify(console_return),
         success:function(data){
-          debug_text(data, true);
+          data = data.split(" ||| ")
+          if (data.length > 1)
+            debug_text(data[0], data[1], true);
+          else
+            debug_text(data[0])
         },
         error: function (request,error) {
           debug_text(error);
@@ -329,8 +341,9 @@
 		})
 	});
 
-  function debug_text(str, show_btn=false){
+  function debug_text(str, btn_msg="Continue", show_btn=false){
     $("#console_output").val(str);
+    $("#continue").html(btn_msg)
     if (show_btn)
       $("#continue").show()
     else

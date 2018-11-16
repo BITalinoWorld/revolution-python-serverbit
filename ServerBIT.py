@@ -1,56 +1,38 @@
 from tornado import websocket, web, ioloop
-# import thread
 import _thread as thread
-import json
-import signal
-import numpy
+import json, signal, numpy
 import sys, traceback, os, time
-from bitalino import *
 from os.path import expanduser
-
-import deviceFinder as deviceFinder
-from riot_finder import *
 import fileinput, time
 from shutil import copyfile
+
+from bitalino import *
+import deviceFinder as deviceFinder
+from riot_finder import *
 
 import osx_statusbar_app
 
 cl = []
 conf_json = {}
-home = ''
 device_list = numpy.array([])
 json_file_path = './static/bit_config.json'
 default_addr = "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"
-conf_port = 9001
 
 class Utils:
     OS = None
+    home = ''
     BITalino_device = None
     sensor_data_json = ""
     labels = ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"]
     riot_ip = '192.168.1.100'
+    riot_port = 8888
     ipv4_addr = ''
     net_interface_type = None
-    enable_servers = {"BITalino": False, "Riot": False,
-                        "OSC_config": ["192.168.1.100", 8888]}
+    enable_servers = {"BITalino": False, "Riot": False}
 
 
     def add_quote(self, a):
         return '"{0}"'.format(a)
-
-    def strToBool(self, v):
-        try:
-            return v.lower() in ("True", "true", "1")
-        except Exception as e:
-            return v
-
-    def jsonToBool(self, json):
-        for key, bool in json.items():
-            json[key] = self.strToBool(bool)
-        return json
-
-    def stringToArray(self, str):
-        return '['+str+']'
 
 ut = Utils()
 
@@ -122,15 +104,14 @@ class DeviceUpdateHandler(web.RequestHandler):
         return True
 
     def post(self):
-        print(self.request.body)
-        ut.enable_servers = json.loads(self.request.body)
+        # print(self.request.body)
+        ut.enable_servers.update(json.loads(self.request.body))
 
     def open(self):
         self.write("device_list")
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
-
 
     def get(self):
         device_list = listDevices(ut.enable_servers)
@@ -152,8 +133,8 @@ class DeviceUpdateHandler(web.RequestHandler):
 class WebConsoleHandler(websocket.WebSocketHandler):
     def get(self):
         net = riot_net_config(ut.OS)
-        riot_interface_type = None
-        riot_ssid = "PLUX"
+        riot_interface_type = ut.enable_servers[OSC_config]['net_interface_type']
+        riot_ssid = ut.enable_servers[OSC_config]['riot_ssid']
         console_str=""
         # -2.1- get network interface and ssid & assign module ip
         time.sleep(1)
@@ -231,10 +212,6 @@ def listDevices(enable_servers):
     print ("============")
     print ("please select your device:")
     print ("Example: /dev/tty.BITalino-XX-XX-DevB")
-    if(enable_servers["Bluetooth"]):
-        print("listing PLUX devices")
-    if(enable_servers["OSC"]):
-        print("listing Riot devices")
     allDevices = deviceFinder.findDevices(ut.OS, enable_servers)
     dl = []
     for dev in allDevices:
@@ -276,33 +253,44 @@ def check_device_addr(addr):
     print ("connecting to %s ..." % addr)
     return addr
 
-settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
-app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/console', WebConsoleHandler), (r'/v1/configs', Configs)], **settings)
-
-if __name__ == '__main__':
-    ut.OS = platform.system()
-    print ("Detected platform: " + ut.OS)
-    home = expanduser("~") + '/ServerBIT'
-    print(home)
+def getConfigFile():
     try:
-        with open(home+'/config.json') as data_file:
+        with open(ut.home+'/config.json') as data_file:
             conf_json = json.load(data_file)
-            json_file_path = home + '/config.json'
+            json_file_path = ut.home + '/config.json'
+            return conf_json
     except Exception as e:
         print(e)
         with open('config.json') as data_file:
             conf_json = json.load(data_file)
-            os.mkdir(home)
-        os.mkdir(home+'/static')
-        copyfile('config.json', home + '/config.json')
-    	# with open(home+'/config.json', 'w') as outfile:
-        #     json.dump(conf_json, outfile)
-        json_file_path = home + '/config.json'
+            os.mkdir(ut.home)
+        os.mkdir(ut.home+'/static')
+        copyfile('config.json', ut.home + '/config.json')
+        json_file_path = ut.home + '/config.json'
         for file in ['ClientBIT.html', 'static/jquery.flot.js', 'static/jquery.js']:
-        	with open(home+'/'+file, 'w') as outfile:
+        	with open(ut.home+'/'+file, 'w') as outfile:
         		outfile.write(open(file).read())
+        time.sleep(1)
+        osx_statusbar_app.restart()
 
-    # print(conf_json)
+settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
+app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/console', WebConsoleHandler), (r'/v1/configs', Configs)], **settings)
+conf_port = 9001
+
+if __name__ == '__main__':
+    ut.OS = platform.system()
+    print ("Detected platform: " + ut.OS)
+    ut.home = expanduser("~") + '/ServerBIT'
+    print(ut.home)
+    conf_json = getConfigFile()
+    conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])
+    ut.enable_servers = {
+        "riot_ip": conf_json['OSC_config'][0],
+        "riot_port": conf_json['OSC_config'][1],
+        "riot_ssid": conf_json['OSC_config'][2],
+        "net_interface_type": conf_json['OSC_config'][3]
+    }
+
     signal.signal(signal.SIGINT, signal_handler)
     app.listen(conf_port)
     # thread.start_new_thread(BITalino_handler, (conf_json['device'],conf_json['channels'],conf_json['sampling_rate'], conf_json['labels']))

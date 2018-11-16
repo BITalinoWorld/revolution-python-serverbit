@@ -128,6 +128,7 @@ def findDevices(OS, enable_servers):
     # MACOS - LIST CURRENTLY PAIRED DEVICES
     else:
         if enable_servers["Bluetooth"]:
+            print("listing PLUX devices")
             import biplist
             import binascii
             PersistentPorts = biplist.readPlist(bluetooth_plist)['PersistentPorts']
@@ -139,7 +140,8 @@ def findDevices(OS, enable_servers):
                 except Exception as e:
                     pass
         if enable_servers["OSC"]:
-            ip, port = enable_servers['OSC_config'][0], enable_servers['OSC_config'][1]
+            print("listing Riot devices")
+            ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
             device_list.extend(riot.fetch_devices(ip, port, 1))
             print(device_list)
 

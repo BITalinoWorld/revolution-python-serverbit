@@ -6,5 +6,6 @@
 	"labels": ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"],
 	"ip_address": "127.0.0.1",
 	"port": 9001,
-	"protocol": "Websockets"
+	"protocol": "Websockets",
+	"OSC_config": ["192.168.1.100", "8888", "riot", ""]
 }

@@ -90,11 +90,11 @@ def detect_net_config(net_interface_type, OS):
 def detect_wireless_interface(OS, interface_list):
     det_interface = det_ssid = None
     for interface in interface_list:
-        if ("linux" in OS or "Linux" in OS):
+        if ("linux" in OS):
             det_interface = os.popen('iwgetid').read()[:-1].split()[0]
             det_ssid = os.popen('iwgetid -r').read()[:-1]
             break
-        elif ("Windows" in OS):
+        elif ("windows" in OS):
             det_interface = os.popen('netsh wlan show interfaces | findstr /r "^....Name"').read()[:-1].split()[-1]
             det_ssid = os.popen('netsh wlan show interfaces | findstr /r "^....SSID"').read()[:-1].split()[-1]
             break

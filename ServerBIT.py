@@ -10,8 +10,6 @@ from bitalino import *
 import deviceFinder as deviceFinder
 from riot_finder import *
 
-import osx_statusbar_app
-
 cl = []
 conf_json = {}
 device_list = numpy.array([])
@@ -29,7 +27,6 @@ class Utils:
     ipv4_addr = ''
     net_interface_type = None
     enable_servers = {"BITalino": False, "Riot": False}
-
 
     def add_quote(self, a):
         return '"{0}"'.format(a)
@@ -104,7 +101,7 @@ class DeviceUpdateHandler(web.RequestHandler):
         return True
 
     def post(self):
-        # print(self.request.body)
+        print(self.request.body)
         ut.enable_servers.update(json.loads(self.request.body))
 
     def open(self):
@@ -133,8 +130,8 @@ class DeviceUpdateHandler(web.RequestHandler):
 class WebConsoleHandler(websocket.WebSocketHandler):
     def get(self):
         net = riot_net_config(ut.OS)
-        riot_interface_type = ut.enable_servers[OSC_config]['net_interface_type']
-        riot_ssid = ut.enable_servers[OSC_config]['riot_ssid']
+        riot_interface_type = ut.enable_servers['OSC_config']['net_interface_type']
+        riot_ssid = ut.enable_servers['OSC_config']['riot_ssid']
         console_str=""
         # -2.1- get network interface and ssid & assign module ip
         time.sleep(1)
@@ -163,7 +160,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
 
     def post(self):
         net = riot_net_config(ut.OS)
-        console_return = json.loads(self.request.body)
+        console_return = json.loads((self.request.body).decode('utf-8'))
         if "Continue" in console_return["msg"]:
             console_str = net.reconfigure_ipv4_address(ut.riot_ip, ut.ipv4_addr, ut.net_interface_type)
             console_str += " ||| Run Command"
@@ -202,7 +199,7 @@ class Configs(web.RequestHandler):
                 print ("writing to json:" + new_value)
                 change_json_value(json_file_path, format, str(new_value), "port" in key)
         time.sleep(1)
-        osx_statusbar_app.restart()
+        restart_app()
 
 def signal_handler(signal, frame):
     print('TERMINATED')
@@ -253,6 +250,11 @@ def check_device_addr(addr):
     print ("connecting to %s ..." % addr)
     return addr
 
+def start_gui():
+    os_list = ["linux", "windows"]
+    if ut.OS not in os_list:
+        import osx_statusbar_app
+
 def getConfigFile():
     try:
         with open(ut.home+'/config.json') as data_file:
@@ -271,20 +273,28 @@ def getConfigFile():
         	with open(ut.home+'/'+file, 'w') as outfile:
         		outfile.write(open(file).read())
         time.sleep(1)
-        osx_statusbar_app.restart()
+        restart_app()
+
+def restart_app():
+    os_list = ["linux", "windows"]
+    if ut.OS not in os_list:
+        osx_statusbar_app.restart_app()
+    else:
+        os.popen("./start_mac.sh")
 
 settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
 app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/console', WebConsoleHandler), (r'/v1/configs', Configs)], **settings)
 conf_port = 9001
 
 if __name__ == '__main__':
-    ut.OS = platform.system()
+    ut.OS = platform.system().lower()
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'
     print(ut.home)
+    # start_gui()
     conf_json = getConfigFile()
     conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])
-    ut.enable_servers = {
+    ut.enable_servers['OSC_config'] = {
         "riot_ip": conf_json['OSC_config'][0],
         "riot_port": conf_json['OSC_config'][1],
         "riot_ssid": conf_json['OSC_config'][2],

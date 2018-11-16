@@ -10,7 +10,7 @@ class riot_net_config():
         self.OS = OS
     def detect_net_config(self, net_interface_type):
         if net_interface_type is not None:
-            net_interface_type, ssid = detect_wireless_interface(self.OS, [net_interface_type])
+            net_interface_type, ssid = self.detect_wireless_interface(self.OS, [net_interface_type])
         if net_interface_type is None:
             # try:
             print ("detecting wireless interface... (this can be set manually with --net)")
@@ -22,11 +22,11 @@ class riot_net_config():
     def detect_wireless_interface(self, interface_list, OS):
         det_interface = det_ssid = None
         for interface in interface_list:
-            if ("linux" in OS or "Linux" in OS):
+            if ("linux" in OS):
                 det_interface = os.popen('iwgetid').read()[:-1].split()[0]
                 det_ssid = os.popen('iwgetid -r').read()[:-1]
                 break
-            elif ("Windows" in OS):
+            elif ("windows" in OS):
                 det_interface = os.popen('netsh wlan show interfaces | findstr /r "^....Name"').read()[:-1].split()[-1]
                 det_ssid = os.popen('netsh wlan show interfaces | findstr /r "^....SSID"').read()[:-1].split()[-1]
                 break
@@ -40,7 +40,7 @@ class riot_net_config():
         return det_interface, det_ssid
 
     def detect_ipv4_address(self, net_interface_type):
-        if "Windows" in self.OS:
+        if "windows" in self.OS:
                 ipv4_addr = os.popen('netsh interface ipv4 show config %s | findstr /r "^....IP Address"' % net_interface_type).read()[:-1].split()[-1]
                 print("Network interface %s address: %s" % (net_interface_type, ipv4_addr))
         else:
@@ -52,14 +52,15 @@ class riot_net_config():
     def reconfigure_ipv4_address(self, riot_ip, ipv4_addr, net_interface_type):
         if riot_ip not in ipv4_addr:
             print ("The computer's IPv4 address must be changed to match")
-            if "Windows" in self.OS:
+            if "windows" in self.OS:
                 cmd = "netsh interface ip set address %s static %s 255.255.255.0 192.168.1.1" % (net_interface_type, riot_ip)
             else:
                 # UNIX ifconfig command with sudo
-                cmd = '"sudo ifconfig %s %s netmask 255.255.255.0"' % (net_interface_type, riot_ip)
-                if "Linix" not in self.OS:
+                cmd = "gksudo ifconfig %s %s netmask 255.255.255.0" % (net_interface_type, riot_ip)
+                if "linux" not in self.OS:
                     # request OSX root privilege with GUI promt
-                    cmd = "osascript -e 'do shell script %s with prompt %s with administrator privileges'" % (cmd, '"ServerBIT requires root access."')
+                    cmd = json.dumps(cmd)
+                    cmd = "osascript -e 'do shell script %s with prompt %s with administrator privileges'" % (cmd.replace('gksudo', 'sudo'), '"ServerBIT requires root access."')
             print(">>> paste the following command: ")
             print ( cmd )
             return cmd

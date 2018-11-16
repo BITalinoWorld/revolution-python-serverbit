@@ -1,4 +1,3 @@
-import rumps
 import webbrowser
 import os
 
@@ -28,4 +27,5 @@ def init_rumps_osx():
     ServerBIT_statusbar_app().run()
 
 if __name__ == '__main__':
-        init_rumps_osx();
+    import rumps
+    init_rumps_osx();

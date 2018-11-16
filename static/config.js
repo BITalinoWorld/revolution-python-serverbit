@@ -151,8 +151,7 @@ $("#continue").click(function (e) {
   var web_console_url = 'http://localhost:9001/v1/console'
   var console_return = {
     "msg": $("#continue").html(),
-    "cmd": $("#console_output").val(),
-    "OSC_config": OSC_config
+    "cmd": $("#console_output").val()
   };
   $.ajax({
     url: web_console_url,

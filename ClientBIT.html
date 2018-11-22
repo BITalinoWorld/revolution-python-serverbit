@@ -1,0 +1,49 @@
+<html>
+    <script language="javascript" type="text/javascript" src="jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="jquery.flot.js"></script>
+    <script type="text/javascript">
+        // Establish a connection to the ServerBIT
+        var ws = new WebSocket("ws://localhost:9001/");
+
+        ws.onopen = function(e) {
+            $('#connecting').hide();
+          };
+          ws.onerror = function(e) {
+            $('#connecting').show();
+          };
+
+        // Process the responses sent by the ServerBIT
+        ws.onmessage = function (e) {
+            data = JSON.parse(e.data)
+            var d1 = [];
+            ch = 'CH1'
+            for (var i = 0; i < data[ch].length; i += 1)
+                d1.push([i, data[ch][i]]);
+            $.plot($("#placeholder"), [ d1 ], {yaxis: {min:0, max: 1024}});
+            var labels = ["nSeq", "CH1", "CH2", "CH6"]
+            var data_stream = ""
+            for (var i = 0; i < labels.length; i += 1){
+              ch = labels[i]
+              if (typeof data[ch] != 'undefined')
+                data_stream += ch + ": " + data[ch][0] + "<br />"
+              else
+                data_stream += ch + ": " + "no acquisition" + "<br />"
+            }
+            //console.log(data_stream)
+            $("#data_stream").html(data_stream);
+          };
+
+        // Detect when the page is unloaded or close
+        window.onbeforeunload = function() {
+            ws.onclose = function () {};
+            ws.close()
+        };
+
+    </script>
+    <body>
+        <div><h1>BioPluxWS</h1></div>
+        <h3 id="connecting">Waiting for WebSocket connection...</h3>
+        <div id="data_stream" style="width:600px;height:10em;"></div>
+	      <div id="placeholder" style="width:600px;height:300px;"></div>
+    </body>
+</html>

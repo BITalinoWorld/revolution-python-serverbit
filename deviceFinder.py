@@ -105,8 +105,7 @@ def findDevices(OS, enable_servers):
     starters = ['BLE', 'BTH']
     device_list = []
     # WINDOWS AND LINUX - SEARCH FOR NEARBY BLUETOOTH DEVICES
-    os_list = ["linux", "windows"]
-    if OS in os_list:
+    if OS == 'Windows' or OS == 'Linux':
         from bluetooth import discover_devices, BluetoothError
         allDevices = []
         print ('searching for devices...')

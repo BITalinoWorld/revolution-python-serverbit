@@ -4,7 +4,7 @@ import json, signal, numpy
 import sys, traceback, os, time
 from os.path import expanduser
 import fileinput, time
-from shutil import copyfile
+from shutil import copyfile, rmtree
 
 from bitalino import *
 import deviceFinder as deviceFinder
@@ -13,23 +13,47 @@ from riot_finder import *
 cl = []
 conf_json = {}
 device_list = numpy.array([])
-json_file_path = './static/bit_config.json'
 default_addr = "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"
+plux = None
 
 class Utils:
     OS = None
     home = ''
+    json_file_path = './static/bit_config.json'
     BITalino_device = None
     sensor_data_json = ""
-    labels = ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"]
     riot_ip = '192.168.1.100'
     riot_port = 8888
     ipv4_addr = ''
     net_interface_type = None
-    enable_servers = {"BITalino": False, "Riot": False}
+    enable_servers = {"Bluetooth": False, "OSC": False}
 
     def add_quote(self, a):
         return '"{0}"'.format(a)
+
+    def getPluxAPI(self):
+        try:
+            import plux_python3.WIN64.plux  as plux
+        except Exception as e:
+            try:
+                import plux_python3.WIN32.plux as plux
+            except Exception as e:
+                try:
+                    import plux_python3.OSX.plux as plux
+                except Exception as e:
+                    print (e)
+                    try:
+                        import plux_python3.LINUX_AMD64.plux as plux
+                    except Exception as e:
+                        print ("Unable to import PLUX API")
+                        return None
+        return plux
+
+    def getBioPLUX(self):
+        global plux
+        plux = self.getPluxAPI()
+        if plux is not None:
+            from plux_python3.ServerPLUX import BiosignalsPLUX
 
 ut = Utils()
 
@@ -58,12 +82,11 @@ def tostring(data):
 def change_json_value(file,orig,new,isFinal):
     ##find and replace string in file, keeps formatting
     # print(file, orig, new)
-    isComma = ','
-    if isFinal: isComma = ''
-    print(isComma)
+    addComma = ','
+    if isFinal: addComma = ''
     for line in fileinput.input(file, inplace=1):
         if orig in line:
-            line = line.replace(str(line.split(': ')[1]), str(new.split(': ')[1]) + "%s\n" % isComma)
+            line = line.replace(str(line.split(': ')[1]), str(new.split(': ')[1]) + "%s\n" % addComma)
         sys.stdout.write(line)
 
 class Index(web.RequestHandler):
@@ -71,8 +94,8 @@ class Index(web.RequestHandler):
     def get(self):
         print("config page opened")
         self.render("config.html",
-            crt_conf = json.load(open(json_file_path, 'r')),
-            old_conf = json.load(open('./static/bit_config.json', 'r')),
+            crt_conf = json.load(open(ut.json_file_path, 'r')),
+            old_conf = json.load(open('./static/plux_config.json', 'r')),
             console_text = "ServerBIT Configuration"
             )
 
@@ -101,11 +124,10 @@ class DeviceUpdateHandler(web.RequestHandler):
         return True
 
     def post(self):
-        print(self.request.body)
+        # print(self.request.body)
         ut.enable_servers.update(json.loads(self.request.body))
 
     def open(self):
-        self.write("device_list")
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
@@ -118,14 +140,6 @@ class DeviceUpdateHandler(web.RequestHandler):
         device_list = json.loads(device_list)
         print (device_list)
         self.write(device_list)
-
-    def on_message(self, message):
-        self.write_message(u"You said: " + message)
-
-    def on_close(self):
-        if self in cl:
-            cl.remove(self)
-        print("DISCONNECTED")
 
 class WebConsoleHandler(websocket.WebSocketHandler):
     def get(self):
@@ -179,26 +193,31 @@ class Configs(web.RequestHandler):
     def post(self):
         new_config = json.loads(self.request.body)
         if "restored config.json" in new_config:
-            print("resetting")
-            return
-        ut.BITalino_device = new_config['device'].replace('"', '')
-        for key, old_value in conf_json.items():
-            format = str('"' + key + '": ')
-            new_value = format + str(new_config[key])
-            #string attribute
-            if "protocol" in key or "ip_address" in key:
-                old_value = format + ut.add_quote(str(old_value))
-            #list of strings
-            if "labels" in key:
-                 old_value = format + str(old_value).replace("'", '"')
-                 new_value = format + str(new_config[key]).replace("'", '"')
-            else:
-                old_value = format + str(old_value)
-            if new_value not in old_value:
-                print (old_value)
-                print ("writing to json:" + new_value)
-                change_json_value(json_file_path, format, str(new_value), "port" in key)
-        time.sleep(1)
+            print("restoring current configuration")
+            try:
+                rmtree(ut.home)
+            except:
+                pass
+        else:
+            # ut.BITalino_device = new_config['device'].replace('"', '')
+            for key, old_value in conf_json.items():
+                format = str('"' + key + '": ')
+                new_value = format + str(new_config[key])
+                #string attribute
+                # if "protocol" in key or "ip_address" in key:
+                if isinstance(old_value, str):
+                    old_value = format + ut.add_quote(str(old_value))
+                #list of strings
+                # if "labels" in key:
+                if all(isinstance(n, str) for n in new_config[key]):
+                    old_value = format + str(old_value).replace("'", '"')
+                    new_value = format + str(new_config[key]).replace("'", '"')
+                else:
+                    old_value = format + str(old_value)
+                if new_value not in old_value:
+                    print (old_value)
+                    print ("writing to json:" + new_value)
+                    change_json_value(ut.json_file_path, format, str(new_value), "port" in key)
         restart_app()
 
 def signal_handler(signal, frame):
@@ -210,9 +229,12 @@ def listDevices(enable_servers):
     print ("please select your device:")
     print ("Example: /dev/tty.BITalino-XX-XX-DevB")
     allDevices = deviceFinder.findDevices(ut.OS, enable_servers)
+    if plux is not None:
+        allDevices.extend(plux.BaseDev.findDevices())
     dl = []
     for dev in allDevices:
-        dl.append([ut.add_quote(dev[0]), dev[1]])
+        if "biosignalsplux" not in dev[0] and "BITalino" not in dev[1]:
+            dl.append([ut.add_quote(dev[0]), dev[1]])
     allDevices = numpy.array(dl)
     return allDevices
 
@@ -246,7 +268,6 @@ def check_device_addr(addr):
     if default_addr in addr:
         while new_device is None:
             new_device = ut.BITalino_device
-            addr = new_device
     print ("connecting to %s ..." % addr)
     return addr
 
@@ -259,7 +280,7 @@ def getConfigFile():
     try:
         with open(ut.home+'/config.json') as data_file:
             conf_json = json.load(data_file)
-            json_file_path = ut.home + '/config.json'
+            ut.json_file_path = ut.home + '/config.json'
             return conf_json
     except Exception as e:
         print(e)
@@ -268,17 +289,18 @@ def getConfigFile():
             os.mkdir(ut.home)
         os.mkdir(ut.home+'/static')
         copyfile('config.json', ut.home + '/config.json')
-        json_file_path = ut.home + '/config.json'
+        ut.json_file_path = ut.home + '/config.json'
         for file in ['ClientBIT.html', 'static/jquery.flot.js', 'static/jquery.js']:
         	with open(ut.home+'/'+file, 'w') as outfile:
         		outfile.write(open(file).read())
-        time.sleep(1)
         restart_app()
 
 def restart_app():
+    time.sleep(1)
     os_list = ["linux", "windows"]
     if ut.OS not in os_list:
-        osx_statusbar_app.restart_app()
+        import osx_statusbar_app
+        osx_statusbar_app.restart()
     else:
         os.popen("./start_mac.sh")
 
@@ -287,11 +309,12 @@ app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/device
 conf_port = 9001
 
 if __name__ == '__main__':
+    ut.getBioPLUX()
     ut.OS = platform.system().lower()
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'
     print(ut.home)
-    # start_gui()
+    start_gui()
     conf_json = getConfigFile()
     conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])
     ut.enable_servers['OSC_config'] = {

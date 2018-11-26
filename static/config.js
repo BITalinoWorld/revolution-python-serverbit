@@ -3,6 +3,19 @@ var dev_entry = []
 var num_devices = 1
 var terminal_cmd = ""
 
+switch(window.location.protocol) {
+   case 'http:':
+   case 'https:':
+     break;
+   case 'file:':
+      debug_text("config.html not loaded from server. \
+Please launch ServerBIT and go to localhost:9001/config")
+      $("#config, #reset_config").hide()
+     break;
+   default:
+     //some other protocol
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   $("#continue").hide()
   var f = document.getElementById("chn_field");
@@ -58,6 +71,7 @@ function server_handler(device_finder) {
 }
 
 function update_device_list(dl) {
+  debug_text("")
   $("select.dev_selector").each(function(){
     $('#'.concat(this.id.toString())).find('option').not(':first').remove();
     var my_dropdown = document.getElementById((this.id).toString())
@@ -96,6 +110,9 @@ function update_device_type( d , d_id){
   var devicetype_id = "devicetype_".concat(d_id);
   document.getElementById(device_id).value = d.value;
   document.getElementById(devicetype_id).value = d.options[d.selectedIndex].id;
+  if (document.getElementById(devicetype_id).value === "biosignalsplux"){
+    debug_text("bioPLUX devices aren't currently support by ServerBIT")
+  }
 }
 
 $("#device-s").change(function() {
@@ -240,7 +257,9 @@ $(document).on('submit', function(){
     "port": entry_inputs["port-s"],
     "protocol": entry_inputs["protocol-s"],
     "channels": chnz,
-    "labels": lbz
+    "labels": lbz,
+    "riot_labels": ["ACC_X", "ACC_Y", "ACC_Z", "GYRO_X", "GYRO_Y", "GYRO_Z", "MAG_X", "MAG_Y", "MAG_Z", "TEMP", "IO", "A1", "A2", "C", "Q1", "Q2", "Q3", "Q4", "PITCH", "YAW", "ROLL", "HEAD"],
+    "OSC_config": ["192.168.1.100", "8888", "riot", ""]
   };
   console.log(json_entry_inputs["ip_address"])
 
@@ -316,20 +335,19 @@ $("#import_json").click(function (e) {
 });
 
 document.getElementById("reset_config").addEventListener("click", function(){
-  console.log("reset")
   $.ajax({
     type: "POST",
     url: 'http://localhost:9001/v1/configs',
     async: 'true',
     data: JSON.stringify("restored config.json"),
     success: function (result) {
-      alert(result)
+      alert("restored config, refresh to continue")
     },
     error: function (request,error) {
-      // This callback function will trigger on unsuccessful action
-      alert(request.responseText)
+      alert("restored config, refresh to continue")
     }
   })
+  debug_text("refresh page")
 });
 function update_console(input){
   input = input.split(" ||| ")

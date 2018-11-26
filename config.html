@@ -1,57 +1,57 @@
 <html>
 <head>
 	<link rel="stylesheet" type="text/css" href="static/jquery.mobile.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css">
 	<script language="javascript" src="static/jquery.js"></script>
 	<script language="javascript" src="static/jquery.mobile.min.js"></script>
-    <script language="javascript"  src="static/jquery.add-input-area.min.js"></script>
+	<script language="javascript"  src="static/jquery.add-input-area.min.js"></script>
 	<style>
 
-		#config, #reset_config, #import_file, #console{
-			margin-left: 35px !important;
-			margin-bottom: 25px !important;
-			width: 50% !important;
-		}
-		.dev_selector{
-			width: 100%;
-		}
-		.button {
-				width: 30%;
-		}
-		.input {
-			width: 30%;
-		}
-		.form-group, .checkbox{
-			margin: 35px;
-			width: 50%;
-	  	display: inline-block;
-		}
-		#console_output{
-			margin: 0;
-			background-color: #36454f;
-			color: lightblue;
-			font-family: monospace;
-			display: inline-block;
-		}
-		#continue{
-			padding: 0;
-			border-top-style: none;
-			border-bottom-bottom: none;
-			margin: 0;
-		}
-		#chn_field{
-			min-width: 366px;
-		}
+	#config, #reset_config, #import_file, #console{
+		margin-left: 35px !important;
+		margin-bottom: 25px !important;
+		width: 50% !important;
+	}
+	.dev_selector{
+		width: 100%;
+	}
+	.button {
+		width: 30%;
+	}
+	.input {
+		width: 30%;
+	}
+	.form-group, .checkbox{
+		margin: 35px;
+		width: 50%;
+		display: inline-block;
+	}
+	#console_output{
+		margin: 0;
+		background-color: #36454f;
+		color: lightblue;
+		font-family: monospace;
+		display: inline-block;
+	}
+	#continue{
+		padding: 0;
+		border-top-style: none;
+		border-bottom-bottom: none;
+		margin: 0;
+	}
+	#chn_field{
+		min-width: 366px;
+	}
 
-		#result {
-		  display:block;
-		  width:400px;
-		  height:200px;
-		}
+	#result {
+		display:block;
+		width:400px;
+		height:200px;
+	}
 
-		#import {
-		  margin:10px 0;
-		}
+	#import {
+		margin:10px 0;
+	}
 
 	</style>
 </head>
@@ -71,88 +71,91 @@
 		<label for="bitalino_or_riot"></label>
 		<fieldset id='bitalino_or_riot_field' data-role="controlgroup" data-type="horizontal">
 			<legend></legend>
-					<input onclick="server_handler(this)" name="finder[]" id="BITalino_check" type="checkbox">
-					<label for="BITalino_check">Bluetooth (BITalino)</label>
-					<input onclick="server_handler(this)" name="finder[]" id="Riot_check" type="checkbox">
-					<label for="Riot_check">OSC (R-IoT)</label>
+			<input onclick="server_handler(this)" name="finder[]" id="BITalino_check" type="checkbox">
+			<label for="BITalino_check">Bluetooth (BITalino)</label>
+			<input onclick="server_handler(this)" name="finder[]" id="Riot_check" type="checkbox">
+			<label for="Riot_check">OSC (R-IoT)</label>
 		</fieldset>
 		<button id="find_devices" type="button">Find Devices</button>
 		<img id="loading_anim" class="hideable_img" src="static/images/ajax-loader.gif" height="42" width="42" style="display none;">
-	<br>
+		<br>
 
-        <table id="device-list" class="table"><!-- "id" attribute is required -->
-            <tbody>
-                <tr class="device-list_var"><!-- .(id)_var -->
-                  <td> <select data-role="none" class="dev_selector" id="mySelect_0">
-			             <option value="">Select New Device</option>
-                        </select>
-                    </td>
-                    <td width="30%"><input data-role="none" type="text" name="textinput-s" id="device_0" placeholder='MAC address (select from dropdown)' ></td>
-                    <td><input data-role="none" type="text" name="textinput-s" id="devicetype_0" disabled="true"></td>
-                    <td class="del-area"><button data-role="none" class="device-list_del">Remove</button></td>
-                 </tr>
-            </tbody>
-        </table>
-				<table style=" width: 50%;">
-					<tbody>
-							<tr>
-        					<td style=" width: 50%;"><input type="button" value="Add Device" class="device-list_add"> </td>
-									<td style=" width: 50%;"><input type="button" value="Update Device List" id="update-device-list"> </td>
-								</td>
-							</tr>
-						</tbody>
-				</table>
+		<table id="device-list" class="table"><!-- "id" attribute is required -->
+			<tbody>
+				<tr class="device-list_var"><!-- .(id)_var -->
+					<td> <select data-role="none" class="dev_selector" id="mySelect_0">
+						<option value="">Select New Device</option>
+					</select>
+				</td>
+				<td width="30%"><input data-role="none" type="text" name="textinput-s" id="device_0" placeholder='MAC address (select from dropdown)' ></td>
+				<td><input data-role="none" type="text" name="textinput-s" id="devicetype_0" disabled="true"></td>
+				<td class="del-area"><button data-role="none" class="device-list_del">Remove</button></td>
+			</tr>
+		</tbody>
+	</table>
+	<table style=" width: 50%;">
+		<tbody>
+			<tr>
+				<td style=" width: 50%;"><input type="button" value="Add Device" class="device-list_add"> </td>
+				<td style=" width: 50%;"><input type="button" value="Update Device List" id="update-device-list"> </td>
+			<!-- </td> -->
+		</tr>
+	</tbody>
+</table>
 
-				<label for="device-s">{{crt_conf['device']}}</label>
-				<input name="textinput-s" id="device-s" placeholder="Empty - select device(s) above and click 'Update Device List'" disabled="true" hidden="true" type="text">
-				<textarea name="name" id='dev_list_area' disabled="true" placeholder="Empty - select device(s) above and click 'Update Device List'" rows="8" cols="80"></textarea>
+<label for="device-s">{{crt_conf['device']}}</label>
+<input name="textinput-s" id="device-s" placeholder="Empty - select device(s) above and click 'Update Device List'" disabled="true" hidden="true" type="text">
+<textarea name="name" id='dev_list_area' disabled="true" placeholder="Empty - select device(s) above and click 'Update Device List'" rows="8" cols="80"></textarea>
 
-		<label for="chnz-s"></label>
-		<fieldset id='chn_field' data-role="controlgroup" data-type="horizontal">
-			<legend>Channel Selection:</legend>
-				{% for chn in old_conf['channels'] %}
-					{% if chn in crt_conf['channels'] %}
-					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox" checked="true">
-					{% else %}
-					<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox">
-					{% end %}
-					<label for="ch{{chn}}" class='buttonLbl'>Channel {{crt_conf['labels'][5:][chn-1]}}</label>
-				{% end %}
-		</fieldset>
-		<label for="lblz-s"></label>
-		<fieldset id='lbl_field' data-role="controlgroup" data-type="horizontal">
-			<legend>Label Selection:</legend>
-				{% for chn in crt_conf['labels'][:5] %}
-				<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}'>
-				{% end %}
-				{% for chn in crt_conf['labels'][5:] %}
-				<input name="chk{{chn}}" id="lb{{chn}}" class="lbToggle" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
-				{% end %}
-		</fieldset>
+<label for="chnz-s"></label>
+<fieldset id='chn_field' data-role="controlgroup" data-type="horizontal">
+	<legend>Channel Selection:</legend>
+	{% for chn in old_conf['channels'] %}
+	{% if chn in crt_conf['channels'] %}
+	<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox" checked="true">
+	{% else %}
+	<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox">
+	{% end %}
+	<label for="ch{{chn}}" class='buttonLbl'>Channel {{crt_conf['labels'][chn-1]}}</label>
+	{% end %}
+</fieldset>
+<label for="lblz-s"></label>
+<fieldset id='lbl_field' data-role="controlgroup" data-type="horizontal">
+	<legend>Label Selection:</legend>
+	<!-- {% for chn in crt_conf['labels'][:5] %}
+	<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}'>
+	{% end %}
+	{% for chn in crt_conf['labels'][5:] %}
+	<input name="chk{{chn}}" id="lb{{chn}}" class="lbToggle" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
+	{% end %} -->
+	{% for chn in crt_conf['labels'] %}
+	<input name="chk{{chn}}" id="lb{{chn}}" class="lbToggle" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
+	{% end %}
+</fieldset>
 
-		{% for key in crt_conf %}
-			{% if 'channels' not in key and 'labels' not in key and 'device' not in key %}
-			<label class="input_toggle" for={{key}}-s>{{key}}</label>
-				{% if 'protocol' in key %}
-				<select id="{{key}}-s">
-					<option value="" selected disabled hidden>{{crt_conf[key]}}</option>
-					<option value='"Websockets"'>Websockets</option>
-					<option value='"OSC"'>OSC</option>
-				</select>
-				{% else %}
-			<input class="input_toggle" name="textinput-s" id="{{key}}-s"  value={{crt_conf[key]}} type="text">
-				{% end %}
-			{% end %}
-		{% end %}
+{% for key in crt_conf %}
+{% if 'channels' not in key and 'labels' not in key and 'device' not in key %}
+<label class="input_toggle" for={{key}}-s>{{key}}</label>
+{% if 'protocol' in key %}
+<select id="{{key}}-s">
+	<option value="" selected disabled hidden>{{crt_conf[key]}}</option>
+	<option value='"Websockets"'>Websockets</option>
+	<option value='"OSC"'>OSC</option>
+</select>
+{% else %}
+<input class="input_toggle" name="textinput-s" id="{{key}}-s"  value={{crt_conf[key]}} type="text">
+{% end %}
+{% end %}
+{% end %}
 
-		<!-- <label for="pinput-s">Port:</label>
-		<input name="textinput-s" id="pinput-s" placeholder={{crt_conf['port']}} value={{crt_conf['port']}} data-clear-btn="true" type="text"> -->
-		<br></br>
-		<input id='Submit' value="Submit" type="submit">
-	</form>
+<!-- <label for="pinput-s">Port:</label>
+<input name="textinput-s" id="pinput-s" placeholder={{crt_conf['port']}} value={{crt_conf['port']}} data-clear-btn="true" type="text"> -->
+<br></br>
+<input id='Submit' value="Submit" type="submit">
+</form>
 
-	<button id="reset_config" type="button">Reset</button>
-    <button id="kill_instance" type="button" disabled="true">Stop ServerBIT</button>
+<button id="reset_config" type="button">Reset Config</button>
+<!-- <button id="kill_instance" type="button" disabled="true">Stop ServerBIT</button> -->
 
 <script language="javascript"  src="static/config.js"></script>
 

@@ -1,5 +1,6 @@
 import webbrowser
 import os
+import rumps
 
 def restart():
     os.popen("./start_mac.sh")
@@ -10,10 +11,13 @@ def init_rumps_osx():
     class ServerBIT_statusbar_app(rumps.App):
         def __init__(self):
             super(ServerBIT_statusbar_app, self).__init__("", icon="static/images/BITalino.icns", quit_button=None)
-            self.menu = ["Preferences", "localhost:9001/config", "relaunch", "close"]
+            self.menu = ["Preferences", "localhost:9001/config", "ServerBIT Directory", "relaunch", "close"]
         @rumps.clicked("Preferences")
         def prefs(self, _):
             webbrowser.open('http://localhost:9001/config', new=2)
+        @rumps.clicked("ServerBIT Directory")
+        def prefs(self, _):
+            os.popen("open ~/ServerBIT/")
         @rumps.clicked("relaunch")
         def relaunch(self, _):
             os.popen("./start_mac.sh")

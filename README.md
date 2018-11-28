@@ -2,7 +2,7 @@
 
 ServerBIT (r)evolution is a minimal software package inteded to support Rapid Application Development. This is designed to demonstrate the OpenSignals client-server architecture. You can use and modify the source code under the terms of the GPL licence.
 
-This architecture uses the Tornado event-driven networking engine in an approach where a Python backend handles the connection to the device, and streams the acquired data in near real-time as JSON-formatted structures to a client over the WebSockets or OSC protocol. This can be used as a service to communicate to other applications and devices (see examples)
+This architecture uses the Tornado event-driven networking engine in an approach where a Python backend handles the connection to the device, and streams the acquired data in near real-time as JSON-formatted structures to a client over the WebSockets or OSC protocol. This can be used as a service to communicate to other applications and devices (see [Examples](#Examples))
 
 The lastest update icludes the following features:
 
@@ -17,7 +17,7 @@ To access the barebones version of ServerBIT, please see [this repository](https
 
 `ServerBIT.py` connects to a device as per the configurations stored in a `config.json` file, expected to be found in the user home directory under a folder with the name `ServerBIT`. If it doesn't exist it is created automatically the first time the server is launched.
 
-`ClientBIT.html` is an example HTML/JavaScript test client, which connects to ServerBIT and opens a connection to a specified BITalino device to acquire data from A1 (EMG data as of early-2014 units) and draw it on the browser in realtime.
+`ClientBIT.html` is an example HTML/JavaScript test client, which connects to ServerBIT and opens a connection to a specified BITalino device to acquire data from A1 (EMG data as of early-2014 units) and draw it on the browser in realtime. See [Examples](#Examples) for more use cases
 
 `config.html` can be accessed once ServerBIT has been launched, where you are able to set the default ServerBIT configuraton.
 
@@ -37,7 +37,7 @@ We have prepared user-friendly installers that already include a Python distribu
 - A configuration test can be made using the `ClientBIT.html` page found on the `ServerBIT` directory on your home folder
 - When finished, Close the command line window to exit ServerBIT
 
-## Mac OS 
+## Mac OS
 
 - Download and install ServerBIT: http://www.bitalino.com/downloads/ServerBIT.pkg
 - Launch ServerBIT
@@ -49,6 +49,9 @@ We have prepared user-friendly installers that already include a Python distribu
 - A configuration test can be made using the `ClientBIT.html` page found on the `ServerBIT` directory on your home folder
 - When finished, go to the ServerBIT toolbar icon and  click `close`
 
+# Examples
+Software templates for Websockets and OSC communication will be added to this repository:
+https://gitlab.com/weselle/serverbit-examples
 
 # Running from Sources
 
@@ -74,6 +77,10 @@ We have prepared user-friendly installers that already include a Python distribu
 If connecting a R-IoT module using *linux* you'll need to install gksudo
 ```
 sudo apt-get install gksu
+```
+- You can then launch/restart ServerBIT using the following command
+```
+./start_linux.sh
 ```
 
 ## Testing ServerBIT
@@ -103,6 +110,64 @@ Whilst it's recommended to only use the config page to change any settings, it's
 
 *If there is an error in the config, use `Reset Config` on the web interface to restore to defaults*
 
+# R-IoT Configuration
+ServerBIT can be used to reconfigure your network settings to receive OSC data assuming the default configuration of the R-IoT. If you are using an alternative setup, please change the `OSC_config` values in `config.json` to match
+
+- Enable Wi-Fi and launch ServerBIT
+- Got to the configuration page
+- Select `OSC(R-IoT)` in `Device Finder`
+- If a terminal command is generated, proceed to `Run Command` (or copy and excecute into your terminal). You may need to allow administrator access to make changes
+- When you receive the message *ServerBIT R-IoT Server is ready* process to `Find Devices`
+- Select your device from the device dropdown. This should appear in the format `/<id>/raw`
+
+For a barebones terminal-based bridge, try [riot-serverbit](https://gitlab.com/weselle/riot-serverbit)
+
+#### Getting back online
+As ServerBIT will change your static IP address, you may need to reset your network settings to get back online. Excecute the OS-appropriate shell script to do so:
+
+**OSX***
+```
+./reset_net_config.sh
+```
+**Windows***
+```
+reset_net_config.vb
+```
+
+# OSC message reference
+
+OSC messages can be used to listen for sensor data and manage actuation for each device connected.
+
+Each device is assigned an id number, which can be used to identify individual modules. The device `<id>` will be **0** if only using a single device
+
+### Data streaming
+
+By default, data will be streamed as separate arrays according to the labels and channels selected. In this case, the output adress format is:
+
+```
+address: /<id>/bitalino
+```
+
+To have all the device data sent with the same message address, check `consolidate_outputs`
+```
+address: /all/bitalino
+```
+
+**Note: ** Some OSC listeners require an expected number of inputs. Make sure this matches the number of selected channels, acknowledging that BITalino always sends a sequence number, two digital inputs and two digital outputs. These are marked as: `"nSeq", "I1", "I2", "O1", "O2"`
+
+The OSC output message can be found on the config page
+
+![Screen_Shot_2018-11-28_at_11.31.24_AM](/uploads/ce8d01ba42238fc47920330020458927/Screen_Shot_2018-11-28_at_11.31.24_AM.png)
+
+### Trigger messages
+
+Trigger messages can be used to manage actuation from the device's output channels. For the BITalino use this message format followed by an array of 3 float values:
+
+```
+address: /<id>/trigger
+message: [O1, O2, pwd]
+```
+
 # Troubleshooting
 
 - Verify that your device is turned on... its one of the most common cause of problems :D
@@ -114,19 +179,9 @@ Whilst it's recommended to only use the config page to change any settings, it's
 - Launch the `ServerBIT.py` script using a Python interpreter to obtain additional information about the error
 - Post an issue in this repository and we'll try to support to the best of our abilities
 
-# R-IoT Configuration
-ServerBIT can be used to reconfigure your network settings to receive OSC data assuming the default configuration of the R-IoT. If you are using an alternative setup, please change the `OSC_config` values in `config.json` to match
-
-# Examples
-Software templates for Websockets and OSC communication will be added to this repository:
-https://gitlab.com/weselle/serverbit-examples
-
 # References
 
 H. Silva, A. Lourenço, A. Fred, R. Martins. BIT: Biosignal Igniter Toolkit. Computer Methods and Programs in Biomedicine, Volume 115, 2014, Pages 20-32.
 
 
 M. Lucas da Silva, D. Gonçalves, T. Guerreiro, H. Silva. A Web-Based Application to Address Individual Interests of Children with Autism Spectrum Disorders. Procedia Computer Science, Volume 14, 2012, Pages 20-27.
-
-
-

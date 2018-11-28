@@ -13,7 +13,6 @@ Please launch ServerBIT and go to localhost:9001/config")
       $("#config, #reset_config").hide()
      break;
    default:
-     //some other protocol
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -25,11 +24,20 @@ document.addEventListener('DOMContentLoaded', function() {
   }
   $("#device-s").prop("value", $("label[for='device-s']").html()).change();
   $("label[for='device-s']").html("Device List");
-  $("#chn_field, #lbl_field, .input_toggle").hide();
-  $("#protocol-s, #ip_address-s, #port-s, label[for='ip_address-s'], label[for='port-s'], label[for='protocol-s'").show();
+  $("#chn_field, #lbl_field, #riot_lbl_field, .input_toggle, #OSC_config-s, #msg_info").hide();
+  $("#protocol-s, #ip_address-s, #port-s, label[for='ip_address-s'], label[for='port-s'], label[for='protocol-s']").show();
+  $("label[for='consolidate_outputs-s']").show()
 
   $('#import_json').hide()
   $('.hideable_img').hide();
+});
+
+$('#config').change(function(){
+  update_msg_info()
+});
+
+$('#config').keyup(function(){
+  update_msg_info()
 });
 
 $("#select_json_file").change(function(){
@@ -55,17 +63,21 @@ function server_handler(device_finder) {
   var str_out = ""
   document.getElementById("find_devices").disabled = $('input[name="finder[]"]:checked').length == 0
   if (device_finder.id === "BITalino_check"){
+    var bit_options = $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s")
     if (device_finder.checked)
-    $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").show("fast");
+    bit_options.show("fast");
     else
-    $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s").hide("fast");
+    bit_options.hide("fast");
     var str_out = device_finder.checked ? "Initializing PLUX device finder" : "Disabled PLUX device finder";
     debug_text("", false)
   }
   if (device_finder.id === "Riot_check"){
     var str_out = device_finder.checked ? "Initializing OSC server for R-IOT" : "Disabled OSC server for R-IOT";
-    if (device_finder.checked)
+    if (device_finder.checked){
     start_osc_server()
+    }else {
+      $("#OSC_config-s, #riot_lbl_field").hide()
+    }
   }
   console.log(str_out)
 }
@@ -87,6 +99,20 @@ function update_device_list(dl) {
     });
   });
   $('.hideable_img').hide('slow');
+}
+
+function update_msg_info() {
+  if (typeof dev_entry != "undefined" && dev_entry.length > 0){
+    if($("#msg_info").is(":hidden"))
+      $("#msg_info").show()
+    var info = [$('#chn_field').find('input[type="checkbox"]:checked').length+4, $("#ip_address-s").val(),$("#port-s").val(), "/0/bitalino"]
+    if (dev_entry.length > 1)
+      info[3] = info[3].replace("0", "{"+(Array.apply(null, {length: dev_entry.length}).map(Number.call, Number))+"}")
+    if ($("#consolidate_outputs-s").val() === "true")
+      info[3] = info[3].replace("0","all")
+    var msg_info = "ServerBIT will be sending "+info[0]+" values to "+info[1]+":"+info[2]+" OSC_address: "+info[3]
+    $("#msg_info").html(msg_info)
+  }
 }
 
 if ($("#device-s").val() === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
@@ -132,10 +158,8 @@ device_clicked.addEventListener('change', function(event) {
 function clicked(buttonNumber){
   if($('#ch'+buttonNumber).prop('checked')){
     $('#'+$(".lbToggle")[buttonNumber-1].id).textinput('enable')
-    // $('#lbA'+buttonNumber).textinput('enable')
   } else {
     $('#'+$(".lbToggle")[buttonNumber-1].id).textinput('disable')
-    // $('#lbA'+buttonNumber).textinput('disable')
   }
 }
 
@@ -148,6 +172,7 @@ function addID(myString, id) {
 }
 
 function start_osc_server() {
+  $("#OSC_config-s, #riot_lbl_field").show()
   debug_text("Initializing OSC server for R-IOT");
   var web_console_url = 'http://localhost:9001/v1/console'
   $.ajax({
@@ -247,6 +272,7 @@ $(document).on('submit', function(){
       }
     }
   }
+  entry_inputs["OSC_config-s"] = $("#OSC_config-s").html()
   console.log(entry_inputs)
 
   json_entry_inputs = {
@@ -258,8 +284,9 @@ $(document).on('submit', function(){
     "protocol": entry_inputs["protocol-s"],
     "channels": chnz,
     "labels": lbz,
-    "riot_labels": ["ACC_X", "ACC_Y", "ACC_Z", "GYRO_X", "GYRO_Y", "GYRO_Z", "MAG_X", "MAG_Y", "MAG_Z", "TEMP", "IO", "A1", "A2", "C", "Q1", "Q2", "Q3", "Q4", "PITCH", "YAW", "ROLL", "HEAD"],
-    "OSC_config": ["192.168.1.100", "8888", "riot", ""]
+    "consolidate_outputs": entry_inputs["consolidate_outputs-s"],
+    "riot_labels": entry_inputs["riot_labels-s"],
+    "OSC_config": entry_inputs["OSC_config-s"]
   };
   console.log(json_entry_inputs["ip_address"])
 
@@ -268,7 +295,6 @@ $(document).on('submit', function(){
     url: 'http://localhost:9001/v1/configs',
     async: 'true',
     data: JSON.stringify(json_entry_inputs),
-    // data: '{"device": "'+dev+'", "sampling_rate":'+fs+', "buffer_size":'+bs+', "port":'+port+', "labels":"'+lbz+'", "channels":"'+ chnz +'"}',
     success: function (result) {
       window.location.href = 'http://localhost:9001/v1/configs'
     },
@@ -369,6 +395,22 @@ function debug_text(str, btn_msg="Continue", show_btn=false){
 function arrayToString(array) {
   return '['.concat(array).concat(']')
 }
+
+function parse(str) {
+    var args = [].slice.call(arguments, 1),
+        i = 0;
+
+    return str.replace(/%s/g, function() {
+        return args[i++];
+    });
+}
+
+$(window).keydown(function(event){
+    if(event.keyCode == 13) {
+      event.preventDefault();
+      return false;
+    }
+  });
 
 function IsJsonString(str) {
   try {

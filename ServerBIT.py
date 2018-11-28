@@ -22,6 +22,7 @@ class Utils:
     json_file_path = './static/bit_config.json'
     BITalino_device = None
     sensor_data_json = ""
+    riot_server_ready = False
     riot_ip = '192.168.1.100'
     riot_port = 8888
     ipv4_addr = ''
@@ -95,8 +96,11 @@ class Index(web.RequestHandler):
         print("config page opened")
         self.render("config.html",
             crt_conf = json.load(open(ut.json_file_path, 'r')),
-            old_conf = json.load(open('./static/plux_config.json', 'r')),
-            console_text = "ServerBIT Configuration"
+            old_conf = json.load(open('./static/bit_config.json', 'r')),
+            console_text = "ServerBIT Configuration",
+            OSC_config = json.load(open(ut.json_file_path, 'r'))['OSC_config'],
+            riot_labels = json.load(open(ut.json_file_path, 'r'))['riot_labels'],
+            bitalino_address = "/<id>/bitalino"
             )
 
     def on_message(self, message):
@@ -146,7 +150,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
         net = riot_net_config(ut.OS)
         riot_interface_type = ut.enable_servers['OSC_config']['net_interface_type']
         riot_ssid = ut.enable_servers['OSC_config']['riot_ssid']
-        console_str=""
+        console_str="ServerBIT R-IoT server is ready"
         # -2.1- get network interface and ssid & assign module ip
         time.sleep(1)
         net_interface_type, ssid = net.detect_net_config(riot_interface_type)
@@ -169,7 +173,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
             console_str = ("The computer's IPv4 address must be changed to match \nrun the following command to reconfigure your wireless settings ||| Continue")
             ut.ipv4_addr = ipv4_addr
             ut.net_interface_type = net_interface_type
-
+        ut.riot_server_ready = True
         self.write( json.dumps(console_str) )
 
     def post(self):
@@ -203,12 +207,12 @@ class Configs(web.RequestHandler):
             for key, old_value in conf_json.items():
                 format = str('"' + key + '": ')
                 new_value = format + str(new_config[key])
+                if "OSC_config" in key:
+                    continue
                 #string attribute
-                # if "protocol" in key or "ip_address" in key:
                 if isinstance(old_value, str):
                     old_value = format + ut.add_quote(str(old_value))
                 #list of strings
-                # if "labels" in key:
                 if all(isinstance(n, str) for n in new_config[key]):
                     old_value = format + str(old_value).replace("'", '"')
                     new_value = format + str(new_config[key]).replace("'", '"')
@@ -228,7 +232,7 @@ def listDevices(enable_servers):
     print ("============")
     print ("please select your device:")
     print ("Example: /dev/tty.BITalino-XX-XX-DevB")
-    allDevices = deviceFinder.findDevices(ut.OS, enable_servers)
+    allDevices = deviceFinder.findDevices(ut.OS, enable_servers, ut.riot_server_ready)
     if plux is not None:
         allDevices.extend(plux.BaseDev.findDevices())
     dl = []
@@ -309,7 +313,7 @@ app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/device
 conf_port = 9001
 
 if __name__ == '__main__':
-    ut.getBioPLUX()
+    # ut.getBioPLUX()
     ut.OS = platform.system().lower()
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'

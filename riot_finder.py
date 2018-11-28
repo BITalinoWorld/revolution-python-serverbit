@@ -9,10 +9,9 @@ class riot_net_config():
     def __init__(self, OS):
         self.OS = OS
     def detect_net_config(self, net_interface_type):
-        if net_interface_type is not None:
-            net_interface_type, ssid = self.detect_wireless_interface(self.OS, [net_interface_type])
-        if net_interface_type is None:
-            # try:
+        if net_interface_type is not None and net_interface_type is not "":
+            net_interface_type, ssid = self.detect_wireless_interface([net_interface_type], self.OS)
+        else:
             print ("detecting wireless interface... (this can be set manually with --net)")
             net_interface_type, ssid = self.detect_wireless_interface(netifaces.interfaces(), self.OS)
             if ssid is not None:

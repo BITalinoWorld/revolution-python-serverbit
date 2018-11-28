@@ -20,7 +20,7 @@ wprimett@plux.info
 
 """
 import re
-import riot
+import riot_handler
 
 regex_bitalino = re.compile('[b|B][i|I][t|T][a|A][l|L][i|I][n|N][o|O]')
 regex_bioplux = re.compile('[b|B][i|I][o|O][p|P][l|L][u|U][x|X]')
@@ -101,7 +101,7 @@ def findDevicesManually(device_type_connection, device_id, device_type):
     return device_list
 
 
-def findDevices(OS, enable_servers):
+def findDevices(OS, enable_servers, riot_server_ready):
     starters = ['BLE', 'BTH']
     device_list = []
     # WINDOWS AND LINUX - SEARCH FOR NEARBY BLUETOOTH DEVICES
@@ -139,10 +139,10 @@ def findDevices(OS, enable_servers):
                     device_list.append([device_connection, device_type])
                 except Exception as e:
                     pass
-        if enable_servers["OSC"]:
+        if enable_servers["OSC"] and riot_server_ready:
             print("listing Riot devices")
             ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
-            device_list.extend(riot.fetch_devices(ip, port, 1))
+            device_list.extend(riot_handler.fetch_devices(ip, port, 1))
             print(device_list)
 
     return device_list

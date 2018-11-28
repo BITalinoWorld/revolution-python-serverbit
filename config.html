@@ -33,6 +33,12 @@
 		font-family: monospace;
 		display: inline-block;
 	}
+	#msg_info {
+		margin: 0;
+		color: grey;
+		font-family: monospace;
+		display: inline-block;
+	}
 	#continue{
 		padding: 0;
 		border-top-style: none;
@@ -59,6 +65,9 @@
 	<div id="console">
 		<textarea data-role="none" rows="2" cols="55" id="console_output" disabled="true">{{console_text}}</textarea>
 		<button align="right" data-role="none" id="continue" type="button">Continue</button>
+		<!-- <p id='OSC_config-s'> {{OSC_config}} </p> -->
+		<input name="textinput-s" id="OSC_config-s" type="text" value='{{OSC_config}}' disabled='true'>
+		<textarea data-role="none" class='lbl_toggle' rows="2" cols="55" id="msg_info" disabled="true"></textarea>
 	</div>
 	<div id="import_file">
 		<label>Import config file (optional)</label>
@@ -109,7 +118,7 @@
 
 <label for="chnz-s"></label>
 <fieldset id='chn_field' data-role="controlgroup" data-type="horizontal">
-	<legend>Channel Selection:</legend>
+	<legend>Channel Selection (BITalino):</legend>
 	{% for chn in old_conf['channels'] %}
 	{% if chn in crt_conf['channels'] %}
 	<input onclick=clicked({{chn}}) name="chk{{chn}}" id="ch{{chn}}" type="checkbox" checked="true">
@@ -121,20 +130,28 @@
 </fieldset>
 <label for="lblz-s"></label>
 <fieldset id='lbl_field' data-role="controlgroup" data-type="horizontal">
-	<legend>Label Selection:</legend>
-	<!-- {% for chn in crt_conf['labels'][:5] %}
-	<input name="chk{{chn}}" id="lb{{chn}}" type="text" placeholder='{{chn}}' value='{{chn}}'>
-	{% end %}
-	{% for chn in crt_conf['labels'][5:] %}
-	<input name="chk{{chn}}" id="lb{{chn}}" class="lbToggle" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
-	{% end %} -->
+	<div data-role="collapsible" data-theme="a" data-content-theme="a">
+	<legend>Label Selection (BITalino):</legend>
+	<ul data-role="listview">
 	{% for chn in crt_conf['labels'] %}
-	<input name="chk{{chn}}" id="lb{{chn}}" class="lbToggle" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'>
+	<li><input name="chk{{chn}}" id="lb{{chn}}" class="lbToggle" type="text" placeholder='{{chn}}' value='{{chn}}' disabled='disabled'></li>
 	{% end %}
+</ul>
+</div>
+</fieldset>
+
+<fieldset id='riot_lbl_field'>
+<div data-role="collapsible" data-theme="a" data-content-theme="a">
+<legend>Label Selection (R-IoT):</legend>
+<ul data-role="listview">
+<li><input name="textinput-s" id="riot_labels-s" type="text" value='{{riot_labels}}'></li>
+</ul>
+</div>
 </fieldset>
 
 {% for key in crt_conf %}
-{% if 'channels' not in key and 'labels' not in key and 'device' not in key %}
+{% if 'channels' not in key and 'labels' not in key and \
+	'device' not in key and 'OSC_config' not in key %}
 <label class="input_toggle" for={{key}}-s>{{key}}</label>
 {% if 'protocol' in key %}
 <select id="{{key}}-s">
@@ -142,14 +159,18 @@
 	<option value='"Websockets"'>Websockets</option>
 	<option value='"OSC"'>OSC</option>
 </select>
+{% elif 'consolidate_outputs' in key %}
+<!-- <label for="{{key}}-s" class="ui-hidden-accessible">{{key}}</label> -->
+<select name="flip-8" id="{{key}}-s" data-role="flipswitch" data-corners="false">
+    <option value="false">false</option>
+    <option value="true">true</option>
+</select>
 {% else %}
 <input class="input_toggle" name="textinput-s" id="{{key}}-s"  value={{crt_conf[key]}} type="text">
 {% end %}
 {% end %}
 {% end %}
 
-<!-- <label for="pinput-s">Port:</label>
-<input name="textinput-s" id="pinput-s" placeholder={{crt_conf['port']}} value={{crt_conf['port']}} data-clear-btn="true" type="text"> -->
 <br></br>
 <input id='Submit' value="Submit" type="submit">
 </form>

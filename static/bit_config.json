@@ -8,5 +8,6 @@
 	"protocol": "Websockets",
 	"ip_address": "127.0.0.1",
 	"port": 9001,
+	"consolidate_outputs": false,
 	"OSC_config": ["192.168.1.100", "8888", "riot", ""]
 }

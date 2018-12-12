@@ -153,11 +153,11 @@ To have all the device data sent with the same message address, check `consolida
 address: /all/bitalino
 ```
 
-**Note: ** Some OSC listeners require an expected number of inputs. Make sure this matches the number of selected channels, acknowledging that BITalino always sends a sequence number, two digital inputs and two digital outputs. These are marked as: `"nSeq", "I1", "I2", "O1", "O2"`
+**Note: ** Some OSC listeners require an expected number of inputs. Make sure this matches the number of selected channels, acknowledging that BITalino always sends a sequence number, two digital inputs and two digital outputs. These are marked as:
+`"nSeq", "I1", "I2", "O1", "O2"`
 
 The OSC output message can be found on the config page
-
-![Screen_Shot_2018-11-28_at_11.31.24_AM](/uploads/ce8d01ba42238fc47920330020458927/Screen_Shot_2018-11-28_at_11.31.24_AM.png)
+[(example)](/uploads/ce8d01ba42238fc47920330020458927/Screen_Shot_2018-11-28_at_11.31.24_AM.png)
 
 ### Trigger messages
 

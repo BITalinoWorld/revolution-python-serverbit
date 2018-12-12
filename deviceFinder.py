@@ -20,7 +20,7 @@ wprimett@plux.info
 
 """
 import re
-import riot_handler
+from riot_device_handler import *
 
 regex_bitalino = re.compile('[b|B][i|I][t|T][a|A][l|L][i|I][n|N][o|O]')
 regex_bioplux = re.compile('[b|B][i|I][o|O][p|P][l|L][u|U][x|X]')
@@ -30,6 +30,8 @@ regex_blebioplux = re.compile('[b|B][l|L][e|E][p|P][l|L][u|U][x|X]')
 regex_gestureplux = re.compile('[g|G][e|E][s|S][t|T][u|U][r|R][e|E][p|P][l|L][u|U][x|X]')
 regex_musclebanplux = re.compile('[m|M][u|U][s|S][c|C][l|L][e|E][b|B][a|A][n|N]')
 regex_openbanplux = re.compile('[o|O][p|P][e|E][n|N][b|B][a|A][n|N][p|P][l|L][u|U][x|X]')
+regex_riot = re.compile('/.*/raw')
+regex_riot_bitalino = re.compile('/.*/bitalino')
 
 bluetooth_plist = "/Library/Preferences/com.apple.Bluetooth.plist"
 
@@ -64,6 +66,9 @@ def match_musclebanplux(str):
 def match_openbanplux(str):
     return re.search(regex_openbanplux, str) is not None
 
+def match_riot(str):
+    return (re.search(regex_riot, str) is not None or re.search(regex_riot_bitalino, str) is not None)
+
 def is_plux_device(d):
     try:
         check_type(d)
@@ -88,6 +93,8 @@ def check_type(str):
         return "musclebanplux"
     elif match_openbanplux(str):
         return "ddme_openbanplux"
+    elif match_riot(str):
+        return "R-Iot (OSC)"
     else:
         raise Exception("UNDEFINED_DEVICE_TYPE")
 
@@ -140,9 +147,15 @@ def findDevices(OS, enable_servers, riot_server_ready):
                 except Exception as e:
                     pass
         if enable_servers["OSC"] and riot_server_ready:
+            riot_lib = riot_handler()
             print("listing Riot devices")
             ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
-            device_list.extend(riot_handler.fetch_devices(ip, port, 1))
+            try:
+                device_list.extend(riot.fetch_devices(ip, port, 1))
+            except Exception as e:
+                print(e)
+                pass
             print(device_list)
+            # riot_handler.riot_handler()
 
     return device_list

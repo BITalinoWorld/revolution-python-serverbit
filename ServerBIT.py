@@ -1,14 +1,19 @@
-from tornado import websocket, web, ioloop
+from tornado import websocket, web, ioloop # used for html config page
 import _thread as thread
+import threading
+import websockets # used for real-time data streaming
+import asyncio
 import json, signal, numpy
 import sys, traceback, os, time
 from os.path import expanduser
 import fileinput, time
 from shutil import copyfile, rmtree
 
-from bitalino import *
 import deviceFinder as deviceFinder
+from bitalino import *
+from BITalino_device_handler import *
 from riot_finder import *
+from riot_device_handler import *
 
 cl = []
 conf_json = {}
@@ -28,6 +33,9 @@ class Utils:
     ipv4_addr = ''
     net_interface_type = None
     enable_servers = {"Bluetooth": False, "OSC": False}
+
+    active_device_list = []
+    inactive_device_list = []
 
     def add_quote(self, a):
         return '"{0}"'.format(a)
@@ -57,6 +65,18 @@ class Utils:
             from plux_python3.ServerPLUX import BiosignalsPLUX
 
 ut = Utils()
+
+def restart_app():
+    time.sleep(1)
+    os_list = ["linux", "windows"]
+    if ut.OS not in os_list:
+        import osx_statusbar_app
+        osx_statusbar_app.restart()
+    elif 'linux' in ut.OS:
+        os.popen("./start_linux.sh")
+    else:
+        restart = subprocess.Popen("start_win.bat", shell=True, stdout = subprocess.PIPE)
+        stdout, stderr = restart.communicate()
 
 def tostring(data):
     """
@@ -228,6 +248,7 @@ def signal_handler(signal, frame):
     print('TERMINATED')
     sys.exit(0)
 
+# fetch nearby/pairs devices using respective PLUX/Bitalino classes
 def listDevices(enable_servers):
     print ("============")
     print ("please select your device:")
@@ -242,36 +263,40 @@ def listDevices(enable_servers):
     allDevices = numpy.array(dl)
     return allDevices
 
-def BITalino_handler(mac_addr, ch_mask, srate, labels):
-    new_mac_addr = check_device_addr(mac_addr[0])
-    print('LISTENING')
-    #labels = ["'nSeq'", "'I1'", "'I2'", "'O1'", "'O2'", "'A1'", "'A2'", "'A3'", "'A4'", "'A5'", "'A6'"]
-    ch_mask = numpy.array(ch_mask) - 1
-    try:
-        print(new_mac_addr)
-        device=BITalino(new_mac_addr)
-        print(ch_mask)
-        print(srate)
-        device.start(srate, ch_mask)
-        cols = numpy.arange(len(ch_mask)+5)
-        while (1):
-            data=device.read(250)
-            res = "{"
-            for i in cols:
-                idx = i
-                if (i>4): idx=ch_mask[i-5]+5
-                res += '"'+labels[idx]+'":'+tostring(data[:,i])+','
-            res = res[:-1]+"}"
-            if len(cl)>0: cl[-1].write_message(res)
-    except:
-        traceback.print_exc()
-        os._exit(0)
+# def BITalino_handler(mac_addr, ch_mask, srate, labels):
+#     new_mac_addr = check_device_addr(mac_addr[0])
+#     print('LISTENING')
+#     #labels = ["'nSeq'", "'I1'", "'I2'", "'O1'", "'O2'", "'A1'", "'A2'", "'A3'", "'A4'", "'A5'", "'A6'"]
+#     ch_mask = numpy.array(ch_mask) - 1
+#     try:
+#         print(new_mac_addr)
+#         device=BITalino(new_mac_addr)
+#         print(ch_mask)
+#         print(srate)
+#         device.start(srate, ch_mask)
+#         cols = numpy.arange(len(ch_mask)+5)
+#         while (1):
+#             data=device.read(250)
+#             res = "{"
+#             for i in cols:
+#                 idx = i
+#                 if (i>4): idx=ch_mask[i-5]+5
+#                 res += '"'+labels[idx]+'":'+tostring(data[:,i])+','
+#             res = res[:-1]+"}"
+#             if len(cl)>0: cl[-1].write_message(res)
+#     except:
+#         traceback.print_exc()
+#         os._exit(0)
 
 def check_device_addr(addr):
     new_device = None
     if default_addr in addr:
+        print ("device address has not been added" + "\n" +
+        "please select a PLUX device in the device finder")
         while new_device is None:
-            new_device = ut.BITalino_device
+            pass
+    for mac_addr in addr:
+        print(deviceFinder.check_type(str(mac_addr)))
     print ("connecting to %s ..." % addr)
     return addr
 
@@ -294,23 +319,72 @@ def getConfigFile():
         os.mkdir(ut.home+'/static')
         copyfile('config.json', ut.home + '/config.json')
         ut.json_file_path = ut.home + '/config.json'
-        for file in ['ClientBIT.html', 'static/jquery.flot.js', 'static/jquery.js']:
+        for file in ['ClientBIT.html', 'static/jquery.flot.js', 'static/jquery.js', 'Preferences.html']:
         	with open(ut.home+'/'+file, 'w') as outfile:
         		outfile.write(open(file).read())
         restart_app()
 
-def restart_app():
-    time.sleep(1)
-    os_list = ["linux", "windows"]
-    if ut.OS not in os_list:
-        import osx_statusbar_app
-        osx_statusbar_app.restart()
-    else:
-        os.popen("./start_mac.sh")
+async def connect_devices(mac_addrs, ch_mask, srate, riot_lib, wait_time=None):
+    ch_mask = numpy.array(ch_mask) - 1
+    for mac_addr in mac_addrs:
+        mac_addr = str(mac_addr)
+        type = deviceFinder.check_type(mac_addr)
+        try:
+            if 'bitalino' in type:
+                device = BITalino(mac_addr)
+                device.start(srate, ch_mask)
+            if 'R-Iot' in type:
+                ip, port = ut.enable_servers['OSC_config']['riot_ip'], ut.enable_servers['OSC_config']['riot_port']
+                device = riot_lib.fetch_devices(ip, port, 1)[0]
+            ut.active_device_list.append(device)
+            if mac_addr in ut.inactive_device_list:
+                ut.inactive_device_list.remove(mac_addr)
+        except Exception as e:
+            print(e)
+            print ("could not connect to: %s" % mac_addr)
+            if mac_addr not in ut.inactive_device_list:
+                ut.inactive_device_list.append(mac_addr)
+            continue # move onto next device in list
+    wait_time = 0.0 if wait_time is None else wait_time
+    await asyncio.sleep(wait_time)
+    return
 
-settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
-app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/console', WebConsoleHandler), (r'/v1/configs', Configs)], **settings)
-conf_port = 9001
+async def main_device_handler(mac_addrs, ch_mask, srate, nsamples, labels):
+    riot = riot_handler()
+    active_device_list = []
+    # 1. first attempt to connect all devices
+    while len(ut.active_device_list) == 0:
+        await connect_devices(mac_addrs, ch_mask, srate, riot)
+    # 2. re-attept to connect / restart dropped connections
+    # 2.1 update device list upon new connection
+    bitalino = BITalino_handler()
+    while True:
+        await connect_devices(ut.inactive_device_list, ch_mask, srate, riot, wait_time=0.0)
+        if active_device_list != ut.active_device_list:
+            print("updating device list")
+            active_device_list = ut.active_device_list
+        # 3. begin data acquisition
+        for device in active_device_list:
+            try:
+                await bitalino.read_data(device, ch_mask, srate, nsamples, labels)
+            except Exception as e:
+                ut.active_device_list.remove(device)
+                ut.inactive_device_list.append(str(device.macAddress))
+        if len(ut.active_device_list) == 0:
+            return
+
+# Run web application in the background
+class ConfigWebServer(threading.Thread):
+    def run(self):
+        conf_port = 9001
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        settings = {"static_path": os.path.join(os.path.dirname(__file__), "static")}
+        app = web.Application([(r'/', SocketHandler), (r'/config', Index), (r'/v1/devices', DeviceUpdateHandler), (r'/v1/console', WebConsoleHandler), (r'/v1/configs', Configs)], **settings)
+        # signal.signal(signal.SIGINT, signal_handler)
+        app.listen(conf_port)
+        ioloop.IOLoop.instance().start()
+
+ConfigWebServer().start()
 
 if __name__ == '__main__':
     # ut.getBioPLUX()
@@ -328,7 +402,17 @@ if __name__ == '__main__':
         "net_interface_type": conf_json['OSC_config'][3]
     }
 
-    signal.signal(signal.SIGINT, signal_handler)
-    app.listen(conf_port)
-    # thread.start_new_thread(BITalino_handler, (conf_json['device'],conf_json['channels'],conf_json['sampling_rate'], conf_json['labels']))
-    ioloop.IOLoop.instance().start()
+    # check device id, wait for valid selection
+    new_mac_addr = check_device_addr(conf_json['device'])
+    main_device_loop = asyncio.get_event_loop()
+    try:
+        main_device_loop.run_until_complete(main_device_handler(
+            conf_json['device'], conf_json['channels'], conf_json['sampling_rate'], conf_json['buffer_size'], conf_json['labels']))
+    except Exception as e:
+        print(e)
+        pass
+    finally:
+        main_device_loop.stop()
+
+    # thread.start_new_thread(BITalino_handler, (new_mac_addr,
+    #     conf_json['channels'],conf_json['sampling_rate'], conf_json['labels']))

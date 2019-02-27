@@ -32,6 +32,7 @@ regex_musclebanplux = re.compile('[m|M][u|U][s|S][c|C][l|L][e|E][b|B][a|A][n|N]'
 regex_openbanplux = re.compile('[o|O][p|P][e|E][n|N][b|B][a|A][n|N][p|P][l|L][u|U][x|X]')
 regex_riot = re.compile('/.*/raw')
 regex_riot_bitalino = re.compile('/.*/bitalino')
+regex_arduino = re.compile('usbmodem')
 
 bluetooth_plist = "/Library/Preferences/com.apple.Bluetooth.plist"
 
@@ -69,9 +70,13 @@ def match_openbanplux(str):
 def match_riot(str):
     return (re.search(regex_riot, str) is not None or re.search(regex_riot_bitalino, str) is not None)
 
+def match_arduino(str):
+    return (re.search(regex_arduino, str) is not None)
+
 def is_plux_device(d):
     try:
-        check_type(d)
+        if check_type(d) == "arduino":
+            return False
         return True
     except:
         return False
@@ -95,6 +100,8 @@ def check_type(str):
         return "ddme_openbanplux"
     elif match_riot(str):
         return "R-Iot (OSC)"
+    elif match_arduino(str):
+        return "arduino"
     else:
         raise Exception("UNDEFINED_DEVICE_TYPE")
 
@@ -151,11 +158,50 @@ def findDevices(OS, enable_servers, riot_server_ready):
             print("listing Riot devices")
             ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
             try:
-                device_list.extend(riot.fetch_devices(ip, port, 1))
+                device_list.extend(riot_lib.fetch_devices(ip, port, 1))
             except Exception as e:
                 print(e)
                 pass
             print(device_list)
             # riot_handler.riot_handler()
+        if enable_servers["Serial"]:
+            import serial.tools.list_ports
+            print("listing USB/Serial devices")
+            ard_patt = re.compile('/dev/*.usbmodem')
+            arduino_ports = [
+                port.device for port in serial.tools.list_ports.comports()
+                if re.match(ard_patt, port.device) or 'Arduino' in port.description
+            ]
+            for arduino_port in arduino_ports:
+                try:
+                    device_list.append([arduino_port, 'arduino_usb'])
+                except Exception as e:
+                    pass
+        if enable_servers["UDP_out"]:
+            import socket, time
+            print("listing WiFi enabled arduino devices")
+
+            UDP_IP = "0.0.0.0"
+            UDP_PORT = 2390
+            udp_listener = socket.socket(socket.AF_INET, # Internet
+                                 socket.SOCK_DGRAM) # UDP
+
+            arduino_devices = []
+            try:
+                udp_listener.bind((UDP_IP, UDP_PORT))
+                udp_listener.settimeout(5.0)
+                data, addr = udp_listener.recvfrom(1024) # buffer size is 1024 bytes
+                udp_listener.settimeout(None)
+                print ("received message:", data.decode('utf-8'))
+                print ("received message from:", addr)
+                arduino_devices.append("%s-%s" % (data.decode('utf-8'), addr[0])) #include all responses
+            except:
+                pass
+            arduino_devices = set(arduino_devices)
+            for arduino_wifi_device in arduino_devices:
+                try:
+                    device_list.append([arduino_wifi_device, 'serial_usb'])
+                except Exception as e:
+                    pass
 
     return device_list

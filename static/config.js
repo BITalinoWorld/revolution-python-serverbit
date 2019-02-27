@@ -4,18 +4,19 @@ var num_devices = 1
 var terminal_cmd = ""
 
 switch(window.location.protocol) {
-   case 'http:':
-   case 'https:':
-     break;
-   case 'file:':
-      debug_text("config.html not loaded from server. \
-Please launch ServerBIT and go to localhost:9001/config")
-      $("#config, #reset_config").hide()
-     break;
-   default:
+  case 'http:':
+  case 'https:':
+  break;
+  case 'file:':
+  debug_text("config.html not loaded from server. \
+  Please launch ServerBIT and go to localhost:9001/config")
+  $("#config, #reset_config").hide()
+  break;
+  default:
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  // $("#msg_info").html()
   $("#continue").hide()
   var f = document.getElementById("chn_field");
   var inputs = f.getElementsByTagName("input")
@@ -64,19 +65,35 @@ function server_handler(device_finder) {
   document.getElementById("find_devices").disabled = $('input[name="finder[]"]:checked').length == 0
   if (device_finder.id === "BITalino_check"){
     var bit_options = $("#chn_field, #lbl_field, #buffer_size-s, #sampling_rate-s")
-    if (device_finder.checked)
-    bit_options.show("fast");
-    else
-    bit_options.hide("fast");
+    if (device_finder.checked){
+      bit_options.show("fast");
+    }
+    else{
+      bit_options.hide("fast");
+    }
     var str_out = device_finder.checked ? "Initializing PLUX device finder" : "Disabled PLUX device finder";
     debug_text("", false)
   }
   if (device_finder.id === "Riot_check"){
     var str_out = device_finder.checked ? "Initializing OSC server for R-IOT" : "Disabled OSC server for R-IOT";
     if (device_finder.checked){
-    start_osc_server()
-    }else {
-      $("#OSC_config-s, #riot_lbl_field").hide()
+      $(".riot_only").show()
+      start_osc_server()
+    }
+    else {
+      $(".riot_only").hide()
+    }
+  }
+  if (device_finder.id === "Arduino_check"){
+    var str_out = device_finder.checked ? "Serial devices enabled" : "Serial devices disabled";
+    if (device_finder.checked){
+      // start_osc_server()
+    }
+  }
+  if (device_finder.id === "Arduino_wifi_check"){
+    var str_out = device_finder.checked ? "Arduino (WiFi) devices enabled" : "Arduino (WiFi) devices disabled";
+    if (device_finder.checked){
+      // start_osc_server()
     }
   }
   console.log(str_out)
@@ -102,17 +119,21 @@ function update_device_list(dl) {
 }
 
 function update_msg_info() {
-  if (typeof dev_entry != "undefined" && dev_entry.length > 0){
+  if ($("#device-s").val() !== "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB" || $("#device-s").val() !== ""){
     if($("#msg_info").is(":hidden"))
-      $("#msg_info").show()
+    $("#msg_info").show()
     var info = [$('#chn_field').find('input[type="checkbox"]:checked').length+4, $("#ip_address-s").val(),$("#port-s").val(), "/0/bitalino"]
     if (dev_entry.length > 1)
-      info[3] = info[3].replace("0", "{"+(Array.apply(null, {length: dev_entry.length}).map(Number.call, Number))+"}")
+    info[3] = info[3].replace("0", "{"+(Array.apply(null, {length: dev_entry.length}).map(Number.call, Number))+"}")
     if ($("#consolidate_outputs-s").val() === "true")
-      info[3] = info[3].replace("0","all")
+    info[3] = info[3].replace("0","all")
     var msg_info = "ServerBIT will be sending "+info[0]+" values to "+info[1]+":"+info[2]+" OSC_address: "+info[3]
     $("#msg_info").html(msg_info)
   }
+  // else {
+  //   $("#msg_info").show()
+  //   $("#msg_info").html(msg_info)
+  // }
 }
 
 if ($("#device-s").val() === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB"){
@@ -125,7 +146,7 @@ $("#update-device-list").click(function() {
   for (i = 0; i < $("select.dev_selector").length; i++){
     var addr = $("#device_"+i).val()
     if (!dev_entry.includes(addr))
-      dev_entry.push(addr)
+    dev_entry.push(addr)
   }
   dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
   $("#device-s").prop('value', arrayToString(dev_entry.toString())).change();
@@ -172,7 +193,6 @@ function addID(myString, id) {
 }
 
 function start_osc_server() {
-  $("#OSC_config-s, #riot_lbl_field").show()
   debug_text("Initializing OSC server for R-IOT");
   var web_console_url = 'http://localhost:9001/v1/console'
   $.ajax({
@@ -216,7 +236,9 @@ $("#find_devices").click(function (e) {
   var device_list_url = 'http://localhost:9001/v1/devices'
   var json_device_finder = {
     "Bluetooth": $('input[name="finder[]"]')[0].checked,
-    "OSC": $('input[name="finder[]"]')[1].checked
+    "OSC": $('input[name="finder[]"]')[1].checked,
+    "UDP_out": $('input[name="finder[]"]')[2].checked,
+    "Serial": $('input[name="finder[]"]')[3].checked
   };
   console.log(json_device_finder)
   $.ajax({
@@ -252,9 +274,7 @@ $(document).on('submit', function(){
   for (var i = 0; i < inputs.length; i++){
     lbz.push(inputs[i].value.replace(/'/g, '"'));
     if (!inputs[i].disabled){
-      if (i > 4){
-        chnz.push( i-4 )
-      }
+      chnz.push( i )
     }
   }
   console.log(lbz)
@@ -387,9 +407,9 @@ function debug_text(str, btn_msg="Continue", show_btn=false){
   $("#console_output").val(str);
   $("#continue").html(btn_msg)
   if (show_btn)
-    $("#continue").show()
+  $("#continue").show()
   else
-    $("#continue").hide()
+  $("#continue").hide()
 }
 
 function arrayToString(array) {
@@ -397,20 +417,20 @@ function arrayToString(array) {
 }
 
 function parse(str) {
-    var args = [].slice.call(arguments, 1),
-        i = 0;
+  var args = [].slice.call(arguments, 1),
+  i = 0;
 
-    return str.replace(/%s/g, function() {
-        return args[i++];
-    });
+  return str.replace(/%s/g, function() {
+    return args[i++];
+  });
 }
 
 $(window).keydown(function(event){
-    if(event.keyCode == 13) {
-      event.preventDefault();
-      return false;
-    }
-  });
+  if(event.keyCode == 13) {
+    event.preventDefault();
+    return false;
+  }
+});
 
 function IsJsonString(str) {
   try {

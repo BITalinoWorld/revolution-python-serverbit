@@ -6,16 +6,22 @@ import netifaces
 import sys, traceback, os, time, json
 
 class riot_net_config():
-    def __init__(self, OS):
+    def __init__(self, OS, log_level=1):
         self.OS = OS
+        self.log_level = log_level
+    def debug_text(self, message):
+        if self.log_level is not None:
+            print (message)
+        else:
+            return
     def detect_net_config(self, net_interface_type):
         if net_interface_type is not None and net_interface_type is not "":
             net_interface_type, ssid = self.detect_wireless_interface([net_interface_type], self.OS)
         else:
-            print ("detecting wireless interface... (this can be set manually with --net)")
+            self.debug_text ("detecting wireless interface... (this can be set manually with --net)")
             net_interface_type, ssid = self.detect_wireless_interface(netifaces.interfaces(), self.OS)
             if ssid is not None:
-                print("Connected to wifi network: " + ssid)
+                self.debug_text("Connected to wifi network: " + ssid)
         return net_interface_type, ssid
 
     def detect_wireless_interface(self, interface_list, OS):
@@ -41,14 +47,15 @@ class riot_net_config():
     def detect_ipv4_address(self, net_interface_type):
         if "windows" in self.OS:
                 ipv4_addr = os.popen('netsh interface ipv4 show config %s | findstr /r "^....IP Address"' % net_interface_type).read()[:-1].split()[-1]
-                print("Network interface %s address: %s" % (net_interface_type, ipv4_addr))
+                self.debug_text("Network interface %s address: %s" % (net_interface_type, ipv4_addr))
         else:
             addrs = netifaces.ifaddresses(net_interface_type)
             ipv4_addr = addrs[netifaces.AF_INET][0]['addr']
-            print("Network interface %s address: %s" % (net_interface_type, ipv4_addr))
+            self.debug_text("Network interface %s address: %s" % (net_interface_type, ipv4_addr))
         return ipv4_addr
 
     def reconfigure_ipv4_address(self, riot_ip, ipv4_addr, net_interface_type):
+        print(riot_ip, ipv4_addr)
         if riot_ip not in ipv4_addr:
             print ("The computer's IPv4 address must be changed to match")
             if "windows" in self.OS:

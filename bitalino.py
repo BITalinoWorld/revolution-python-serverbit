@@ -498,10 +498,10 @@ class BITalino(object):
             self.send(7)
             version_str = ''
             while True:
-                if self.isPython2:
-                    version_str += self.receive(1)
-                else:
-                    version_str += self.receive(1).decode('utf-8', 'ignore') #@WP
+                # if self.isPython2:
+                #     version_str += self.receive(1)
+                # else:
+                version_str += self.receive(1).decode('utf-8', 'ignore') #@WP
                 if version_str[-1] == '\n' and 'BITalino' in version_str:
                     break
             return version_str[version_str.index("BITalino"):-1]

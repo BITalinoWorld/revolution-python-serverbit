@@ -46,6 +46,7 @@ class riot_handler:
             res = res[:-1] + "}"
             #if len(cl) > 0: cl[-1].write_message(res)
             self.device_data[int(d_id[1])] = res
+            print(self.device_data[0])
         except:
             traceback.print_exc()
             os._exit(0)
@@ -70,9 +71,8 @@ class riot_handler:
     #         await ws.send(ut.device_data[device_id])
     #         await asyncio.sleep(0.1)
 
-    async def testApp():
-        while 1:
-            print ("something")
+    def testApp():
+        thread.start_new_thread(self.start_riot_listener, (self.ip , self.port)) # one thread to listen to all devices on the same ip & port
 
     # -3- stream device data to network
     def fetch_devices(self, listener_ip, listener_port, find_new):
@@ -84,10 +84,12 @@ class riot_handler:
             thread.start_new_thread(self.start_riot_listener, (listener_ip, listener_port)) # one thread to listen to all devices on the same ip & port
             while not self.osc_server_started : time.sleep(0.1)
             if find_new == 1: timer(5, text="searching for devices on this network")
-            while self.device_data[0] == "" or len(self.device_ids) == 0 or max_counter < 2:
+            while self.device_data[0] == "" or len(self.device_ids) == 0:
                 print ("no new devices found")
                 timer(5, text="searching for devices on this network")
                 max_counter+=1
+                if max_counter > 2:
+                    return []
             print ("found %i device(s)" % len(self.device_ids))
             for device_id in self.device_ids:
                 osc_devices.append([str(device_id), "R-Iot (OSC)"])
@@ -99,8 +101,8 @@ class riot_handler:
         #     print ()
         #     sys.exit(1)
 
-    def riot_handler(self):
-        print(self.device_data[0])
+    def read_data(self):
+        # print(self.device_data[0])
         main_device_loop = asyncio.get_event_loop()
         try:
             main_device_loop.run_until_complete(testApp())

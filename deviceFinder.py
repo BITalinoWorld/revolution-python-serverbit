@@ -119,89 +119,92 @@ def findDevices(OS, enable_servers, riot_server_ready):
     starters = ['BLE', 'BTH']
     device_list = []
     # WINDOWS AND LINUX - SEARCH FOR NEARBY BLUETOOTH DEVICES
-    if OS == 'Windows' or OS == 'Linux':
-        from bluetooth import discover_devices, BluetoothError
-        allDevices = []
-        print ('searching for devices...')
-        try:
-            allDevices = discover_devices(duration=6, lookup_names=True)
-            numDevices = len(allDevices)
-            print ("found %i devices" % numDevices)
-        except (BluetoothError, OSError) as e:
-            print (e)
-            print("+++++")
-            print ("Please check bluetooth is turned on and try again")
-            print("QUITAPP\n")
-        for device in allDevices:
+    if enable_servers["Bluetooth"]:
+        if OS == 'windows' or OS == 'linux':
+            from bluetooth import discover_devices, BluetoothError
+            allDevices = []
+            print ('searching for devices...')
             try:
-                device_type = check_type(device[1])
-                device_list.append([device[0].upper(), device_type])
-            except Exception as e:
-                pass
-                #print("DEVICE FINDER | " + str(mac) + ": " + str(e))
-    # MACOS - LIST CURRENTLY PAIRED DEVICES
-    else:
-        if enable_servers["Bluetooth"]:
+                allDevices = discover_devices(duration=6, lookup_names=True)
+                numDevices = len(allDevices)
+                print ("found %i devices" % numDevices)
+            except (BluetoothError, OSError) as e:
+                print (e)
+                print("+++++")
+                print ("Please check bluetooth is turned on and try again")
+                print("QUITAPP\n")
+            for device in allDevices:
+                try:
+                    device_type = check_type(device[1])
+                    device_list.append([device[0].upper(), device_type])
+                except Exception as e:
+                    pass
+                    #print("DEVICE FINDER | " + str(mac) + ": " + str(e))
+        # MACOS - LIST CURRENTLY PAIRED DEVICES
+        else:
             print("listing PLUX devices")
             import biplist
             import binascii
             PersistentPorts = biplist.readPlist(bluetooth_plist)['PersistentPorts']
             for key, device in list(PersistentPorts.items()):
+                print(key)
+                print
                 try:
                     device_connection = '/dev/tty.' + device['BTTTYName']
                     device_type = check_type(str(device_connection))
                     device_list.append([device_connection, device_type])
                 except Exception as e:
                     pass
-        if enable_servers["OSC"] and riot_server_ready:
-            riot_lib = riot_handler()
-            print("listing Riot devices")
-            ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
+    ### OSC/riot devices
+    if enable_servers["OSC"] and riot_server_ready:
+        riot_lib = riot_handler()
+        print("listing Riot devices")
+        ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
+        try:
+            device_list.extend(riot_lib.fetch_devices(ip, port, 1))
+        except Exception as e:
+            print(e)
+            pass
+        print(device_list)
+        # riot_handler.riot_handler()
+    if enable_servers["Serial"]:
+        import serial.tools.list_ports
+        print("listing USB/Serial devices")
+        ard_patt = re.compile('/dev/*.usbmodem')
+        arduino_ports = [
+            port.device for port in serial.tools.list_ports.comports()
+            if re.match(ard_patt, port.device) or 'Arduino' in port.description
+        ]
+        for arduino_port in arduino_ports:
             try:
-                device_list.extend(riot_lib.fetch_devices(ip, port, 1))
+                device_list.append([arduino_port, 'arduino_usb'])
             except Exception as e:
-                print(e)
                 pass
-            print(device_list)
-            # riot_handler.riot_handler()
-        if enable_servers["Serial"]:
-            import serial.tools.list_ports
-            print("listing USB/Serial devices")
-            ard_patt = re.compile('/dev/*.usbmodem')
-            arduino_ports = [
-                port.device for port in serial.tools.list_ports.comports()
-                if re.match(ard_patt, port.device) or 'Arduino' in port.description
-            ]
-            for arduino_port in arduino_ports:
-                try:
-                    device_list.append([arduino_port, 'arduino_usb'])
-                except Exception as e:
-                    pass
-        if enable_servers["UDP_out"]:
-            import socket, time
-            print("listing WiFi enabled arduino devices")
+    if enable_servers["UDP_out"]:
+        import socket, time
+        print("listing WiFi enabled arduino devices")
 
-            UDP_IP = "0.0.0.0"
-            UDP_PORT = 2390
-            udp_listener = socket.socket(socket.AF_INET, # Internet
-                                 socket.SOCK_DGRAM) # UDP
+        UDP_IP = "0.0.0.0"
+        UDP_PORT = 2390
+        udp_listener = socket.socket(socket.AF_INET, # Internet
+                             socket.SOCK_DGRAM) # UDP
 
-            arduino_devices = []
+        arduino_devices = []
+        try:
+            udp_listener.bind((UDP_IP, UDP_PORT))
+            udp_listener.settimeout(5.0)
+            data, addr = udp_listener.recvfrom(1024) # buffer size is 1024 bytes
+            udp_listener.settimeout(None)
+            print ("received message:", data.decode('utf-8'))
+            print ("received message from:", addr)
+            arduino_devices.append("%s-%s" % (data.decode('utf-8'), addr[0])) #include all responses
+        except:
+            pass
+        arduino_devices = set(arduino_devices)
+        for arduino_wifi_device in arduino_devices:
             try:
-                udp_listener.bind((UDP_IP, UDP_PORT))
-                udp_listener.settimeout(5.0)
-                data, addr = udp_listener.recvfrom(1024) # buffer size is 1024 bytes
-                udp_listener.settimeout(None)
-                print ("received message:", data.decode('utf-8'))
-                print ("received message from:", addr)
-                arduino_devices.append("%s-%s" % (data.decode('utf-8'), addr[0])) #include all responses
-            except:
+                device_list.append([arduino_wifi_device, 'arduino_wifi'])
+            except Exception as e:
                 pass
-            arduino_devices = set(arduino_devices)
-            for arduino_wifi_device in arduino_devices:
-                try:
-                    device_list.append([arduino_wifi_device, 'serial_usb'])
-                except Exception as e:
-                    pass
 
     return device_list

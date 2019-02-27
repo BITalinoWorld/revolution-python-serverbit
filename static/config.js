@@ -142,14 +142,16 @@ if ($("#device-s").val() === "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX
 }
 
 $("#update-device-list").click(function() {
-  dev_entry = []
+  dev_entry = [[]]
   for (i = 0; i < $("select.dev_selector").length; i++){
     var addr = $("#device_"+i).val()
+    var id = $("#devicetype_"+i).val().toString()
+    var both = [addr, '"'+id+'"']
     if (!dev_entry.includes(addr))
-    dev_entry.push(addr)
+        dev_entry.push(arrayToString(both.toString()))
   }
   dev_entry = dev_entry.filter(e => typeof e === 'string' && e !== '')
-  $("#device-s").prop('value', arrayToString(dev_entry.toString())).change();
+  $("#device-s").prop('value', arrayToString(dev_entry)).change();
 })
 
 function update_device_type( d , d_id){

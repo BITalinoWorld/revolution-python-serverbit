@@ -107,7 +107,7 @@ class BITalino_Device(PLUX_Device_Handler):
         self.ch_mask = ch_mask
         self.srate = srate
         self.active_device = BITalino(self.addr)
-        self.active_device.start(srate, ch_mask)
+        self.active_device.start(self.srate, self.ch_mask)
 
     def disconnet(self):
         self.active_device.stop()
@@ -244,7 +244,7 @@ class DeviceUpdateHandler(web.RequestHandler):
         device_dict['dev_list'] = device_list.tolist()
         device_list = json.dumps(tostring(device_dict))
         device_list = json.loads(device_list)
-        print (device_list)
+        #print (device_list)
         self.write(device_list)
 
 class WebConsoleHandler(websocket.WebSocketHandler):
@@ -389,9 +389,10 @@ def check_device_addr(addrs):
         while new_device is None:
             time.sleep(1)
             pass
-    for mac_addr in addrs:
+    for mac_addr, type in addrs:
+        print(mac_addr)
         try:
-            type = deviceFinder.check_type(str(mac_addr))
+            #type = deviceFinder.check_type(str(mac_addr))
             if 'bitalino' in type.lower():
                 session.all_devices.append(BITalino_Device(mac_addr, type))
             elif 'r-iot (osc)' in type.lower():
@@ -472,7 +473,7 @@ async def OSC_Data_Handler():
             # await session.OSC_Handler.output_bundle(session.sensor_data_json[0])
         else:
             print('waiting for data')
-            await asyncio.sleep(3.0)
+            await asyncio.sleep(10.0)
         await asyncio.sleep(0.0)
 
 # Run configuration web page in the background

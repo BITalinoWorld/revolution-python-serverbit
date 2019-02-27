@@ -276,7 +276,7 @@ $(document).on('submit', function(){
   for (var i = 0; i < inputs.length; i++){
     lbz.push(inputs[i].value.replace(/'/g, '"'));
     if (!inputs[i].disabled){
-      chnz.push( i )
+      chnz.push( i+1 )
     }
   }
   console.log(lbz)

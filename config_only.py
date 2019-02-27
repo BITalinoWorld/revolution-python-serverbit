@@ -93,50 +93,9 @@ def tostring(data):
 
     return str(data)
 
-class PLUX_Device_Handler:
-    active_device = None
-    def __init__(self, _addr, _type):
-        self.addr = _addr
-        self.type = _type
-    def connect(self):
-        raise NotImplementedError("function not implimented for this class")
-
-class BITalino_Device(PLUX_Device_Handler):
-    ch_mask = srate = None
-    def test_connection(self, srate, ch_mask):
-        self.ch_mask = ch_mask
-        self.srate = srate
-        self.active_device = BITalino(self.addr)
-        self.active_device.start(self.srate, self.ch_mask)
-
-    def disconnet(self):
-        self.active_device.stop()
-
-    async def get_data_json(self, nsamples, labels, dev_index):
-        device = self.active_device
-        ch_mask = numpy.array(self.ch_mask) - 1
-        cols = numpy.arange(len(ch_mask)+5)
-        labels = ["nSeq", "I1", "I2", "O1"] + labels
-        data = device.read(nsamples)
-        res = "{"
-        for i in cols:
-            idx = i
-            if (i > 4): idx = ch_mask[i - 5] + 5
-            res += '"' + labels[idx] + '":' + tostring(data[:, i]) + ','
-        res = res[:-1] + "}"
-        # print(res)
-        if len(json.loads(json.dumps(session.sensor_data_json[0]))) is 0:
-            session.sensor_data_json[0] = res
-        else:
-            session.sensor_data_json[dev_index] = res
-        await asyncio.sleep(0.0)
-
-class Riot_Device(PLUX_Device_Handler):
-    def test_connection(self):
-        print ("could not connect to: %s (%s)" % (self.addr, self.type))
-
-    async def get_data_json(self):
-        raise NotImplementedError("function not implimented for this class")
+def close_app():
+    time.sleep(3)
+    sys.exit(0)
 
 def restart_app():
     time.sleep(1)
@@ -325,7 +284,7 @@ class Configs(web.RequestHandler):
                     print (old_value)
                     print ("writing to json:" + new_value)
                     change_json_value(ut.json_file_path, format, str(new_value), "OSC_config" in key)
-        restart_app()
+        close_app()
 
 def signal_handler(signal, frame):
     print('TERMINATED')
@@ -512,20 +471,7 @@ if __name__ == '__main__':
         while not session.riot_server_ready:
             session.riot_server_ready = check_net_config()
             time.sleep(1.0)
-    if 'websockets' in conf_json['protocol'].lower() and True:
-        start_server = websockets.serve(WebSockets_Data_Handler, conf_json['ip_address'], conf_json['port'])
-    elif 'osc' in conf_json['protocol'].lower():
-        session.OSC_Handler = OSC_Handler(conf_json['ip_address'], conf_json['port'], conf_json['labels'])
     try:
-        if 'websockets' in conf_json['protocol'].lower():
-            main_device_loop.run_until_complete(start_server)
-        elif 'osc' in conf_json['protocol'].lower():
-            session.debug_info="main loop started"
-            main_device_loop.create_task(OSC_Data_Handler())
-        for module_name, module_class in session.external_modules.items():
-            continue
-        main_device_loop.create_task(main_device_handler(
-            session.all_devices, conf_json['channels'], conf_json['sampling_rate'], conf_json['buffer_size'], conf_json['labels']))
         main_device_loop.run_forever()
     except Exception as e:
         print(e)

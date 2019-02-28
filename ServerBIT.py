@@ -102,34 +102,35 @@ class PLUX_Device_Handler:
         raise NotImplementedError("function not implimented for this class")
 
 class BITalino_Device(PLUX_Device_Handler):
-    ch_mask = srate = None
-    def test_connection(self, srate, ch_mask):
-        self.ch_mask = ch_mask
-        self.srate = srate
-        self.active_device = BITalino(self.addr)
-        self.active_device.start(self.srate, self.ch_mask)
+	ch_mask = srate = None
+	def test_connection(self, srate, ch_mask):
+		self.ch_mask = ch_mask
+		self.srate = srate
+		self.active_device = BITalino(self.addr)
+		self.active_device.start(self.srate, self.ch_mask)
 
-    def disconnet(self):
-        self.active_device.stop()
+	def disconnet(self):
+		self.active_device.stop()
 
-    async def get_data_json(self, nsamples, labels, dev_index):
-        device = self.active_device
-        ch_mask = numpy.array(self.ch_mask) - 1
-        cols = numpy.arange(len(ch_mask)+5)
-        labels = ["nSeq", "I1", "I2", "O1"] + labels
-        data = device.read(nsamples)
-        res = "{"
-        for i in cols:
-            idx = i
-            if (i > 4): idx = ch_mask[i - 5] + 5
-            res += '"' + labels[idx] + '":' + tostring(data[:, i]) + ','
-        res = res[:-1] + "}"
-        # print(res)
-        if len(json.loads(json.dumps(session.sensor_data_json[0]))) is 0:
-            session.sensor_data_json[0] = res
-        else:
-            session.sensor_data_json[dev_index] = res
-        await asyncio.sleep(0.0)
+	async def get_data_json(self, nsamples, labels, dev_index):
+		device = self.active_device
+		ch_mask = numpy.array(self.ch_mask) - 1
+		cols = numpy.arange(len(ch_mask)+5)
+		labels = ["nSeq", "I1", "I2", "O1"] + labels
+		data = device.read(nsamples)
+		res = "{"
+		for i in cols:
+			idx = i
+			if (i > 4): idx = ch_mask[i - 5] + 5
+			res += '"' + labels[idx] + '":' + tostring(data[:, i]) + ','
+		res = res[:-1] + "}"
+		#print(res)
+		if len(json.loads(json.dumps(session.sensor_data_json[0]))) is 0:
+			session.sensor_data_json[0] = res
+		else:
+			session.sensor_data_json.append(res)
+			#session.sensor_data_json[dev_index] = res
+		await asyncio.sleep(0.0)
 
 class Riot_Device(PLUX_Device_Handler):
     def test_connection(self):
@@ -192,7 +193,6 @@ def check_net_config():
     return True
 
 class Index(web.RequestHandler):
-
     def get(self):
         print("config page opened")
         self.render("config.html",
@@ -424,6 +424,12 @@ async def connect_devices(all_devices, ch_mask, srate, wait_time=None):
     await asyncio.sleep(wait_time)
     return
 
+async def print_device_data():
+    if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
+        for i in range(len(session.sensor_data_json)):
+            print(session.sensor_data_json[i])
+        print(len(session.sensor_data_json))
+
 async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
     # riot = riot_handler()
     active_device_list = []
@@ -441,20 +447,23 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
         print("updating device list")
         active_device_list = session.active_device_list
     # 3. begin data acquisition
-    for dev_index, device in enumerate(active_device_list):
-        print('streaming from: %s' % device.addr)
-        try:
-            while True:
+    print (active_device_list)
+    while len(session.active_device_list) != 0:
+        for dev_index in range(len(active_device_list)):
+            try:
+                device = active_device_list[dev_index]
+                print(dev_index)
+                print('streaming from: %s (%s)' % (device.addr, dev_index))
                 await device.get_data_json(nsamples, labels, dev_index)
-        except Exception as e:
-            print(e)
-            print ("connection to %s dropped" % device.addr)
-            session.debug_text = e
-            session.active_device_list.remove(device) # remove device connection
-            session.inactive_device_list.append(str(device.addr))
-            device.active_device = None
-    if len(session.active_device_list) == 0:
-        return
+                #await print_device_data()
+            except Exception as e:
+                print(e)
+                print ("connection to %s dropped" % device.addr)
+                session.debug_text = e
+                session.active_device_list.remove(device) # remove device connection
+                session.inactive_device_list.append(str(device.addr))
+                device.active_device = None
+    return
 
 # loop to continuously send data via Websockets
 async def WebSockets_Data_Handler(ws, path):
@@ -469,8 +478,7 @@ async def OSC_Data_Handler():
     while 1:
         # await session.OSC_Handler.sendTestBundle(5)
         if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
-            #print(session.sensor_data_json[0])
-            await session.OSC_Handler.output_bundle(session.sensor_data_json[0])
+            await session.OSC_Handler.output_bundle(session.sensor_data_json)
         else:
             print('waiting for data')
             await asyncio.sleep(10.0)
@@ -521,7 +529,7 @@ if __name__ == '__main__':
             main_device_loop.run_until_complete(start_server)
         elif 'osc' in conf_json['protocol'].lower():
             session.debug_info="main loop started"
-            main_device_loop.create_task(OSC_Data_Handler())
+            #main_device_loop.create_task(OSC_Data_Handler())
         for module_name, module_class in session.external_modules.items():
             continue
         main_device_loop.create_task(main_device_handler(

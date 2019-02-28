@@ -23,12 +23,11 @@ class OSC_Handler:
     wekaRecAddrStop = "/wekinator/control/stopRecording"
     wekaRecAddrStart = "/wekinator/control/startRecording"
 
-    def __init__(self, ip, port, lbs, dev_id=0):
+    def __init__(self, ip, port, lbs):
         self.client = udp_client.SimpleUDPClient(ip, port)
         self.labels = lbs
         # self.labels = ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"]
-        self.dev_id = 0
-        self.output_address = "/" + str(self.dev_id) + "/bitalino"
+        self.output_address = "/" + str(0) + "/bitalino"
 
     # def init_server(self):
     #     def trigger_handler(args, name, *trigger_values):
@@ -66,22 +65,28 @@ class OSC_Handler:
         self.client.send(bundle)
 
     # e.g '/<id>/bitalino/'
-    async def output_bundle(self, data, whole_sequence=0):
+    async def output_bundle(self, all_data, whole_sequence=0):
         #printJSON(data)
-        data = json.loads(data)
-        while len(json.loads(json.dumps(data))) is 0:
-            await asyncio.sleep(1.0)
-        bundle = osc_bundle_builder.OscBundleBuilder(
-            osc_bundle_builder.IMMEDIATELY)
-        msg = osc_message_builder.OscMessageBuilder(
-            address=self.output_address)
-        for label, output_buffer in data.items():
-            print (label + " " + str(output_buffer[0]))
-            arg_to_add = output_buffer if whole_sequence == 1 else output_buffer[0]
-            msg.add_arg(arg_to_add)
-        bundle.add_content(msg.build())
-        bundle = bundle.build()
-        self.client.send(bundle)
+        id = 0
+        print (len(all_data))
+        for data in all_data:
+            data = json.loads(data)
+            while len(json.loads(json.dumps(data))) is 0:
+                await asyncio.sleep(1.0)
+            bundle = osc_bundle_builder.OscBundleBuilder(
+                osc_bundle_builder.IMMEDIATELY)
+            self.output_address = self.generate_output_message(id)
+            print(self.output_address)
+            msg = osc_message_builder.OscMessageBuilder(
+                address=self.output_address)
+            for label, output_buffer in data.items():
+                print (label + " " + str(output_buffer[0]))
+                arg_to_add = output_buffer if whole_sequence == 1 else output_buffer[0]
+                msg.add_arg(arg_to_add)
+            bundle.add_content(msg.build())
+            bundle = bundle.build()
+            self.client.send(bundle)
+            id += 1
 
     # e.g '/<id>/bitalino/A1'
     async def output_individual(self, data, whole_sequence=0):
@@ -99,6 +104,10 @@ class OSC_Handler:
             msg.build()
             self.client.send(msg)
         await asyncio.sleep(0.0)
+
+    def generate_output_message(self, dev_id):
+        return "/" + str(dev_id) + "/bitalino"
+
 
 def printJSON(decoded_json_input):
     try:

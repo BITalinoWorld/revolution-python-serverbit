@@ -460,17 +460,17 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
 async def WebSockets_Data_Handler(ws, path):
     print('LISTENING')
     main_device_loop.create_task(OSC_Data_Handler())
-    # if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
-    #     while True:
-    #         await ws.send(session.sensor_data_json[0])
-    #         await asyncio.sleep(0.1)
+    if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
+        while True:
+            await ws.send(session.sensor_data_json[0])
+            await asyncio.sleep(0.1)
 
 async def OSC_Data_Handler():
     while 1:
         # await session.OSC_Handler.sendTestBundle(5)
         if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
-            print(session.sensor_data_json[0])
-            # await session.OSC_Handler.output_bundle(session.sensor_data_json[0])
+            #print(session.sensor_data_json[0])
+            await session.OSC_Handler.output_bundle(session.sensor_data_json[0])
         else:
             print('waiting for data')
             await asyncio.sleep(10.0)

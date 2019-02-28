@@ -14,8 +14,6 @@ from time import sleep
 
 class OSC_Handler:
     device_name = "/bitalino"
-    dev_id = 0
-    device_number = str(dev_id)
     data_feature = "/raw/"
     output_address = ""
     labels = []
@@ -25,7 +23,7 @@ class OSC_Handler:
     wekaRecAddrStop = "/wekinator/control/stopRecording"
     wekaRecAddrStart = "/wekinator/control/startRecording"
 
-    def __init__(self, ip, port, lbs):
+    def __init__(self, ip, port, lbs, dev_id=0):
         self.client = udp_client.SimpleUDPClient(ip, port)
         self.labels = lbs
         # self.labels = ["nSeq", "I1", "I2", "O1", "O2","A1","A2","A3","A4","A5","A6"]
@@ -69,17 +67,17 @@ class OSC_Handler:
 
     # e.g '/<id>/bitalino/'
     async def output_bundle(self, data, whole_sequence=0):
-        printJSON(data)
+        #printJSON(data)
         data = json.loads(data)
-        # while len(json.loads(json.dumps(data))) is 0:
-        #     await asyncio.sleep(1.0)
+        while len(json.loads(json.dumps(data))) is 0:
+            await asyncio.sleep(1.0)
         bundle = osc_bundle_builder.OscBundleBuilder(
             osc_bundle_builder.IMMEDIATELY)
         msg = osc_message_builder.OscMessageBuilder(
             address=self.output_address)
-        for label in self.labels:
-            #print (label + " " + str(data[label][0]))
-            arg_to_add = data[label] if whole_sequence == 1 else data[label][0]
+        for label, output_buffer in data.items():
+            print (label + " " + str(output_buffer[0]))
+            arg_to_add = output_buffer if whole_sequence == 1 else output_buffer[0]
             msg.add_arg(arg_to_add)
         bundle.add_content(msg.build())
         bundle = bundle.build()
@@ -88,7 +86,7 @@ class OSC_Handler:
     # e.g '/<id>/bitalino/A1'
     async def output_individual(self, data, whole_sequence=0):
         data = json.loads(data)
-        # printJSON(data)
+        #printJSON(data)
         bundle = osc_bundle_builder.OscBundleBuilder(
             osc_bundle_builder.IMMEDIATELY)
 

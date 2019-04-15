@@ -67,10 +67,9 @@ class OSC_Handler:
     # e.g '/<id>/bitalino/'
     async def output_bundle(self, all_data, whole_sequence=0):
         #printJSON(data)
-        id = 0
         print (len(all_data))
-        for data in all_data:
-            data = json.loads(data)
+        for id in range(len(all_data)):
+            data = json.loads(all_data[id])
             while len(json.loads(json.dumps(data))) is 0:
                 await asyncio.sleep(1.0)
             bundle = osc_bundle_builder.OscBundleBuilder(
@@ -80,13 +79,12 @@ class OSC_Handler:
             msg = osc_message_builder.OscMessageBuilder(
                 address=self.output_address)
             for label, output_buffer in data.items():
-                print (label + " " + str(output_buffer[0]))
+#                print (label + " " + str(output_buffer[0]))
                 arg_to_add = output_buffer if whole_sequence == 1 else output_buffer[0]
                 msg.add_arg(arg_to_add)
             bundle.add_content(msg.build())
             bundle = bundle.build()
             self.client.send(bundle)
-            id += 1
 
     # e.g '/<id>/bitalino/A1'
     async def output_individual(self, data, whole_sequence=0):

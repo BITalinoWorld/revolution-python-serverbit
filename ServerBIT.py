@@ -10,6 +10,7 @@ import sys, traceback, os, time
 from os.path import expanduser
 import fileinput, time
 from shutil import copyfile, rmtree
+import subprocess
 
 import deviceFinder as deviceFinder
 from bitalino import *
@@ -30,10 +31,10 @@ class Utils:
     my_ipv4_addr = ''
     net_interface_type = None
     enable_servers = {"Bluetooth": False, "OSC": False, "UDP_out": False, "Serial": False}
-
+    
     def add_quote(self, a):
         return '"{0}"'.format(a)
-
+    
     def getPluxAPI(self):
         try:
             import plux_python3.WIN64.plux  as plux
@@ -51,7 +52,7 @@ class Utils:
                         print ("Unable to import PLUX API")
                         return None
         return plux
-
+    
     def getBioPLUX(self):
         global plux
         plux = self.getPluxAPI()
@@ -73,12 +74,12 @@ session = Global()
 
 def tostring(data):
     """
-    :param data: object to be converted into a JSON-compatible `str`
-    :type data: any
-    :return: JSON-compatible `str` version of `data`
-
-    Converts `data` from its native data type to a JSON-compatible `str`.
-    """
+        :param data: object to be converted into a JSON-compatible `str`
+        :type data: any
+        :return: JSON-compatible `str` version of `data`
+        
+        Converts `data` from its native data type to a JSON-compatible `str`.
+        """
     dtype=type(data).__name__
     if dtype=='ndarray':
         if numpy.shape(data)!=(): data=data.tolist() # data=list(data)
@@ -90,7 +91,7 @@ def tostring(data):
         data=''
     elif dtype=='str' or dtype=='unicode':
         data=json.dumps(data, sort_keys=True)
-
+    
     return str(data)
 
 class PLUX_Device_Handler:
@@ -102,54 +103,55 @@ class PLUX_Device_Handler:
         raise NotImplementedError("function not implimented for this class")
 
 class BITalino_Device(PLUX_Device_Handler):
-	ch_mask = srate = None
-	def test_connection(self, srate, ch_mask):
-		self.ch_mask = ch_mask
-		self.srate = srate
-		self.active_device = BITalino(self.addr)
-		self.active_device.start(self.srate, self.ch_mask)
-
-	def disconnet(self):
-		self.active_device.stop()
-
-	async def get_data_json(self, nsamples, labels, dev_index):
-		device = self.active_device
-		ch_mask = numpy.array(self.ch_mask) - 1
-		cols = numpy.arange(len(ch_mask)+5)
-		labels = ["nSeq", "I1", "I2", "O1"] + labels
-		data = device.read(nsamples)
-		res = "{"
-		for i in cols:
-			idx = i
-			if (i > 4): idx = ch_mask[i - 5] + 5
-			res += '"' + labels[idx] + '":' + tostring(data[:, i]) + ','
-		res = res[:-1] + "}"
-		#print(res)
-		if len(json.loads(json.dumps(session.sensor_data_json[0]))) is 0:
-			session.sensor_data_json[0] = res
-		else:
-			session.sensor_data_json.append(res)
-			#session.sensor_data_json[dev_index] = res
-		await asyncio.sleep(0.0)
+    ch_mask = srate = None
+    def test_connection(self, srate, ch_mask):
+        self.ch_mask = ch_mask
+        self.srate = srate
+        self.active_device = BITalino(self.addr)
+        self.active_device.start(self.srate, self.ch_mask)
+    
+    def disconnet(self):
+        self.active_device.stop()
+    
+    async def get_data_json(self, nsamples, labels, dev_index):
+        device = self.active_device
+        ch_mask = numpy.array(self.ch_mask) - 1
+        cols = numpy.arange(len(ch_mask)+5)
+        labels = ["nSeq", "I1", "I2", "O1"] + labels
+        data = device.read(nsamples)
+        res = "{"
+        for i in cols:
+            idx = i
+            if (i > 4): idx = ch_mask[i - 5] + 5
+            res += '"' + labels[idx] + '":' + tostring(data[:, i]) + ','
+        res = res[:-1] + "}"
+        #print(res)
+        session.sensor_data_json[0] = res
+        if len(json.loads(json.dumps(session.sensor_data_json[0]))) == 0:
+            session.sensor_data_json[0] = res
+        else:
+            session.sensor_data_json[dev_index] = res
+        await asyncio.sleep(0.0)
 
 class Riot_Device(PLUX_Device_Handler):
     def test_connection(self):
         print ("could not connect to: %s (%s)" % (self.addr, self.type))
-
+    
     async def get_data_json(self):
         raise NotImplementedError("function not implimented for this class")
 
 def restart_app():
     time.sleep(1)
-    os_list = ["linux", "windows"]
-    if ut.OS not in os_list:
-        import osx_statusbar_app
-        osx_statusbar_app.restart()
-    elif 'linux' in ut.OS:
-        os.popen("./start_linux.sh")
-    else:
-        restart = subprocess.Popen("start_win.bat", shell=True, stdout = subprocess.PIPE)
-        stdout, stderr = restart.communicate()
+    sys.exit(1)
+#    os_list = ["linux", "windows"]
+#    if ut.OS not in os_list:
+#        import osx_statusbar_app
+#        osx_statusbar_app.restart()
+#    elif 'linux' in ut.OS:
+#        os.popen("./start_linux.sh")
+#    else:
+#        restart = subprocess.Popen("start_win.bat", shell=True, stdout = subprocess.PIPE)
+#        stdout, stderr = restart.communicate()
 
 def change_json_value(file,orig,new,isFinal):
     ##find and replace string in file, keeps formatting
@@ -196,30 +198,30 @@ class Index(web.RequestHandler):
     def get(self):
         print("config page opened")
         self.render("config.html",
-            crt_conf = json.load(open(ut.json_file_path, 'r')),
-            old_conf = json.load(open('./static/bit_config.json', 'r')),
-            console_text = "ServerBIT Configuration",
-            OSC_config = json.load(open(ut.json_file_path, 'r'))['OSC_config'],
-            riot_labels = json.load(open(ut.json_file_path, 'r'))['riot_labels'],
-            bitalino_address = "/<id>/bitalino",
-            debug_info = session.debug_info
-            )
-
+                    crt_conf = json.load(open(ut.json_file_path, 'r')),
+                    old_conf = json.load(open('./static/bit_config.json', 'r')),
+                    console_text = "ServerBIT Configuration",
+                    OSC_config = json.load(open(ut.json_file_path, 'r'))['OSC_config'],
+                    riot_labels = json.load(open(ut.json_file_path, 'r'))['riot_labels'],
+                    bitalino_address = "/<id>/bitalino",
+                    debug_info = session.debug_info
+                    )
+    
     def on_message(self, message):
         self.write_message(u"You said: " + message)
 
 class SocketHandler(websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
-
+    
     def open(self):
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
-
+    
     def on_message(self, message):
         self.write_message(u"You said: " + message)
-
+    
     def on_close(self):
         if self in cl:
             cl.remove(self)
@@ -228,16 +230,16 @@ class SocketHandler(websocket.WebSocketHandler):
 class DeviceUpdateHandler(web.RequestHandler):
     def check_origin(self, origin):
         return True
-
+    
     def post(self):
         # print(self.request.body)
         ut.enable_servers.update(json.loads(self.request.body))
-
+    
     def open(self):
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
-
+    
     def get(self):
         device_list = listDevices(ut.enable_servers)
         device_dict = {}
@@ -262,7 +264,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
             return
         # -2.2- get serverBIT host ipv4 address
         ipv4_addr = net.detect_ipv4_address(net_interface_type)
-
+        
         # -2.3- check host ssid matches that assigned to the R-IoT module
         if ssid not in riot_ssid:
             print ('{:^24s}'.format("====================="))
@@ -275,27 +277,27 @@ class WebConsoleHandler(websocket.WebSocketHandler):
             console_str = ("The computer's IPv4 address must be changed to match \nrun the following command to reconfigure your wireless settings ||| Continue")
             ut.my_ipv4_addr = ipv4_addr
             ut.net_interface_type = net_interface_type
-        ut.riot_server_ready = True
-        self.write( json.dumps(console_str) )
-
-    def post(self):
-        net = riot_net_config(ut.OS)
-        console_return = json.loads((self.request.body).decode('utf-8'))
-        if "Continue" in console_return["msg"]:
-            console_str = net.reconfigure_ipv4_address(ut.enable_servers["OSC_config"]["riot_ip"], ut.my_ipv4_addr, ut.net_interface_type)
-            console_str += " ||| Run Command"
+            ut.riot_server_ready = True
             self.write( json.dumps(console_str) )
-            return
-
-        if "Run Command" in console_return["msg"]:
-            console_str = riot_net_config.run_ifconfig_command (console_return["cmd"])
-            self.write(json.dumps(console_str))
-            return
+            
+            def post(self):
+                net = riot_net_config(ut.OS)
+                console_return = json.loads((self.request.body).decode('utf-8'))
+                if "Continue" in console_return["msg"]:
+                    console_str = net.reconfigure_ipv4_address(ut.enable_servers["OSC_config"]["riot_ip"], ut.my_ipv4_addr, ut.net_interface_type)
+                    console_str += " ||| Run Command"
+                    self.write( json.dumps(console_str) )
+                    return
+                
+                if "Run Command" in console_return["msg"]:
+                    console_str = riot_net_config.run_ifconfig_command (console_return["cmd"])
+                    self.write(json.dumps(console_str))
+                    return
 
 class Configs(web.RequestHandler):
     def get(self):
         self.write(conf_json)
-
+    
     def post(self):
         new_config = json.loads(self.request.body)
         if "restored config.json" in new_config:
@@ -353,8 +355,8 @@ def getConfigFile():
         copyfile('config.json', ut.home + '/config.json')
         ut.json_file_path = ut.home + '/config.json'
         for file in ['ClientBIT.html', 'static/jquery.flot.js', 'static/jquery.js', 'Preferences.html', 'modules/modules.txt']:
-        	with open(ut.home+'/'+file, 'w') as outfile:
-        		outfile.write(open(file).read())
+            with open(ut.home+'/'+file, 'w') as outfile:
+                outfile.write(open(file).read())
         restart_app()
 
 def dynamic_import(abs_module_path, class_name):
@@ -378,14 +380,13 @@ def import_modules():
                 if found_script is not None:
                     print(module_script)
                     session.external_modules[module_name] = dynamic_import(module_script, module_name)
-    # arduino_controller = session.external_modules["OSC_Serial_Controller"]()
-    # print(arduino_controller.baud_rate)
+# arduino_controller = session.external_modules["OSC_Serial_Controller"]()
+# print(arduino_controller.baud_rate)
 
 def check_device_addr(addrs):
     new_device = None
     if default_addr in addrs:
-        print ("device address has not been added" + "\n" +
-        "please select a PLUX device in the device finder")
+        print ("device address has not been added" + "\n" + "please select a PLUX device in the device finder")
         while new_device is None:
             time.sleep(1)
             pass
@@ -399,8 +400,8 @@ def check_device_addr(addrs):
                 session.all_devices.append(Riot_Device(mac_addr, type))
         except Exception as e:
             pass
-    print ("connecting to %s ..." % session.all_devices)
-    return addrs
+        print ("connecting to %s ..." % session.all_devices)
+        return addrs
 
 async def connect_devices(all_devices, ch_mask, srate, wait_time=None):
     ch_mask = numpy.array(ch_mask) - 1
@@ -448,31 +449,35 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
         active_device_list = session.active_device_list
     # 3. begin data acquisition
     print (active_device_list)
-    while len(session.active_device_list) != 0:
-        for dev_index in range(len(active_device_list)):
-            try:
-                device = active_device_list[dev_index]
-                print(dev_index)
-                print('streaming from: %s (%s)' % (device.addr, dev_index))
-                await device.get_data_json(nsamples, labels, dev_index)
-                #await print_device_data()
-            except Exception as e:
-                print(e)
-                print ("connection to %s dropped" % device.addr)
-                session.debug_text = e
-                session.active_device_list.remove(device) # remove device connection
-                session.inactive_device_list.append(str(device.addr))
-                device.active_device = None
-    return
+    while True:
+        dev_index = 0
+        device = active_device_list[dev_index]
+        try:
+            #                print('streaming from: %s (%s)' % (device.addr, dev_index))
+            await device.get_data_json(nsamples, labels, dev_index)
+        #await print_device_data()
+        except Exception as e:
+            print(e)
+            print ("connection to %s dropped" % device.addr)
+            session.debug_text = e
+            session.active_device_list.remove(device) # remove device connection
+            session.inactive_device_list.append(str(device.addr))
+            device.active_device = None
+            pass
+    if len(session.active_device_list) != 0:
+        return
 
 # loop to continuously send data via Websockets
 async def WebSockets_Data_Handler(ws, path):
     print('LISTENING')
-    main_device_loop.create_task(OSC_Data_Handler())
-    if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
-        while True:
+    print(ws.port)
+    while True:
+        if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
             await ws.send(session.sensor_data_json[0])
-            await asyncio.sleep(0.1)
+        else:
+            print('waiting for data')
+            await asyncio.sleep(3.0)
+        await asyncio.sleep(0.1)
 
 async def OSC_Data_Handler():
     while 1:
@@ -481,7 +486,7 @@ async def OSC_Data_Handler():
             await session.OSC_Handler.output_bundle(session.sensor_data_json)
         else:
             print('waiting for data')
-            await asyncio.sleep(10.0)
+            await asyncio.sleep(3.0)
         await asyncio.sleep(0.0)
 
 # Run configuration web page in the background
@@ -515,11 +520,14 @@ if __name__ == '__main__':
     # check device id, wait for valid selection
     new_mac_addr = check_device_addr(conf_json['device'])
     main_device_loop = asyncio.get_event_loop()
+    time.sleep(5.0)
     if not session.riot_server_ready and any(isinstance(dev, Riot_Device) for dev in session.all_devices):
         print ("Network needs to be re-configured. Go to Preferences.html for assistance")
         while not session.riot_server_ready:
             session.riot_server_ready = check_net_config()
             time.sleep(1.0)
+    else:
+        time.sleep(3.0)
     if 'websockets' in conf_json['protocol'].lower() and True:
         start_server = websockets.serve(WebSockets_Data_Handler, conf_json['ip_address'], conf_json['port'])
     elif 'osc' in conf_json['protocol'].lower():
@@ -529,11 +537,10 @@ if __name__ == '__main__':
             main_device_loop.run_until_complete(start_server)
         elif 'osc' in conf_json['protocol'].lower():
             session.debug_info="main loop started"
-            #main_device_loop.create_task(OSC_Data_Handler())
+        #            main_device_loop.create_task(OSC_Data_Handler())
         for module_name, module_class in session.external_modules.items():
             continue
-        main_device_loop.create_task(main_device_handler(
-            session.all_devices, conf_json['channels'], conf_json['sampling_rate'], conf_json['buffer_size'], conf_json['labels']))
+        main_device_loop.create_task(main_device_handler(session.all_devices, conf_json['channels'], conf_json['sampling_rate'], conf_json['buffer_size'], conf_json['labels']))
         main_device_loop.run_forever()
     except Exception as e:
         print(e)

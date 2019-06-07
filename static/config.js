@@ -280,7 +280,6 @@ $(document).on('submit', function(){
     }
   }
   console.log(lbz)
-
   var fields = document.getElementById("config").querySelectorAll("label");
   for (var i = 0; i <= fields.length; i++){
     if (typeof fields[i] !== 'undefined') {

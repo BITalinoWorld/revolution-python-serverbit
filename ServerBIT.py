@@ -31,10 +31,10 @@ class Utils:
     my_ipv4_addr = ''
     net_interface_type = None
     enable_servers = {"Bluetooth": False, "OSC": False, "UDP_out": False, "Serial": False}
-    
+
     def add_quote(self, a):
         return '"{0}"'.format(a)
-    
+
     def getPluxAPI(self):
         try:
             import plux_python3.WIN64.plux  as plux
@@ -52,7 +52,7 @@ class Utils:
                         print ("Unable to import PLUX API")
                         return None
         return plux
-    
+
     def getBioPLUX(self):
         global plux
         plux = self.getPluxAPI()
@@ -77,7 +77,7 @@ def tostring(data):
         :param data: object to be converted into a JSON-compatible `str`
         :type data: any
         :return: JSON-compatible `str` version of `data`
-        
+
         Converts `data` from its native data type to a JSON-compatible `str`.
         """
     dtype=type(data).__name__
@@ -91,7 +91,7 @@ def tostring(data):
         data=''
     elif dtype=='str' or dtype=='unicode':
         data=json.dumps(data, sort_keys=True)
-    
+
     return str(data)
 
 class PLUX_Device_Handler:
@@ -109,10 +109,10 @@ class BITalino_Device(PLUX_Device_Handler):
         self.srate = srate
         self.active_device = BITalino(self.addr)
         self.active_device.start(self.srate, self.ch_mask)
-    
+
     def disconnet(self):
         self.active_device.stop()
-    
+
     async def get_data_json(self, nsamples, labels, dev_index):
         device = self.active_device
         ch_mask = numpy.array(self.ch_mask) - 1
@@ -136,7 +136,7 @@ class BITalino_Device(PLUX_Device_Handler):
 class Riot_Device(PLUX_Device_Handler):
     def test_connection(self):
         print ("could not connect to: %s (%s)" % (self.addr, self.type))
-    
+
     async def get_data_json(self):
         raise NotImplementedError("function not implimented for this class")
 
@@ -155,7 +155,6 @@ def restart_app():
 
 def change_json_value(file,orig,new,isFinal):
     ##find and replace string in file, keeps formatting
-    # print(file, orig, new)
     addComma = ','
     if isFinal: addComma = ''
     for line in fileinput.input(file, inplace=1):
@@ -206,22 +205,22 @@ class Index(web.RequestHandler):
                     bitalino_address = "/<id>/bitalino",
                     debug_info = session.debug_info
                     )
-    
+
     def on_message(self, message):
         self.write_message(u"You said: " + message)
 
 class SocketHandler(websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
-    
+
     def open(self):
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
-    
+
     def on_message(self, message):
         self.write_message(u"You said: " + message)
-    
+
     def on_close(self):
         if self in cl:
             cl.remove(self)
@@ -230,16 +229,16 @@ class SocketHandler(websocket.WebSocketHandler):
 class DeviceUpdateHandler(web.RequestHandler):
     def check_origin(self, origin):
         return True
-    
+
     def post(self):
         # print(self.request.body)
         ut.enable_servers.update(json.loads(self.request.body))
-    
+
     def open(self):
         if self not in cl:
             cl.append(self)
         print("CONNECTED")
-    
+
     def get(self):
         device_list = listDevices(ut.enable_servers)
         device_dict = {}
@@ -264,7 +263,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
             return
         # -2.2- get serverBIT host ipv4 address
         ipv4_addr = net.detect_ipv4_address(net_interface_type)
-        
+
         # -2.3- check host ssid matches that assigned to the R-IoT module
         if ssid not in riot_ssid:
             print ('{:^24s}'.format("====================="))
@@ -279,7 +278,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
             ut.net_interface_type = net_interface_type
             ut.riot_server_ready = True
             self.write( json.dumps(console_str) )
-            
+
             def post(self):
                 net = riot_net_config(ut.OS)
                 console_return = json.loads((self.request.body).decode('utf-8'))
@@ -288,7 +287,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
                     console_str += " ||| Run Command"
                     self.write( json.dumps(console_str) )
                     return
-                
+
                 if "Run Command" in console_return["msg"]:
                     console_str = riot_net_config.run_ifconfig_command (console_return["cmd"])
                     self.write(json.dumps(console_str))
@@ -297,7 +296,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
 class Configs(web.RequestHandler):
     def get(self):
         self.write(conf_json)
-    
+
     def post(self):
         new_config = json.loads(self.request.body)
         if "restored config.json" in new_config:
@@ -508,14 +507,23 @@ if __name__ == '__main__':
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'
     start_gui()
-    conf_json = getConfigFile()
-    conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])
-    ut.enable_servers['OSC_config'] = {
-        "riot_ip": conf_json['OSC_config'][0],
-        "riot_port": conf_json['OSC_config'][1],
-        "riot_ssid": conf_json['OSC_config'][2],
-        "net_interface_type": conf_json['OSC_config'][3]
-    }
+    try:
+        conf_json = getConfigFile()
+        conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])
+        ut.enable_servers['OSC_config'] = {
+            "riot_ip": conf_json['OSC_config'][0],
+            "riot_port": conf_json['OSC_config'][1],
+            "riot_ssid": conf_json['OSC_config'][2],
+            "net_interface_type": conf_json['OSC_config'][3]
+        }
+    except KeyError as ke:
+        session.debug_info = "invalid json file in %s" % ut.json_file_path
+        print ("invalid json file in %s" % ut.json_file_path)
+        rmtree(ut.home)
+        restart_app()
+    print("data received")
+    print("saving new config to %s" % ut.json_file_path)
+    sys.exit()
     # import_modules()
     # check device id, wait for valid selection
     new_mac_addr = check_device_addr(conf_json['device'])

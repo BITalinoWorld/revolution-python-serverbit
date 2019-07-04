@@ -16,6 +16,14 @@ switch(window.location.protocol) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  var results = new RegExp('[\\?&]' + 'textinput-s' + '=([^&#]*)').exec(window.location.href);
+  console.log(results)
+  if (results != null){
+    debug_text("redirecting to localhost:9001")
+    $("#config, #reset_config").hide()
+    console.log('redirecting to localhost:9001')
+    window.location.replace("http://localhost:9001");
+  }
   // $("#msg_info").html()
   $("#continue").hide()
   var f = document.getElementById("chn_field");

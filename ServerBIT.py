@@ -320,6 +320,9 @@ class Configs(web.RequestHandler):
                 if all(isinstance(n, str) for n in new_config[key]):
                     old_value = format + str(old_value).replace("'", '"')
                     new_value = format + str(new_config[key]).replace("'", '"')
+                #boolean attribute
+                if isinstance(old_value, bool):
+                    old_value = format = old_value
                 else:
                     old_value = format + str(old_value)
                 if new_value not in old_value:

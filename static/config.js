@@ -302,6 +302,7 @@ $(document).on('submit', function(){
     }
   }
   entry_inputs["OSC_config-s"] = $("#OSC_config-s").html()
+  entry_inputs["consolidate_outputs-s"] = jsUcfirst(entry_inputs["consolidate_outputs-s"])
   console.log(entry_inputs)
 
   json_entry_inputs = {
@@ -448,4 +449,10 @@ function IsJsonString(str) {
     return false;
   }
   return true;
+}
+
+//https://dzone.com/articles/how-to-capitalize-the-first-letter-of-a-string-in
+function jsUcfirst(string)
+{
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }

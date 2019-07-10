@@ -67,15 +67,14 @@ class OSC_Handler:
     # e.g '/<id>/bitalino/'
     async def output_bundle(self, all_data, whole_sequence=0):
         #printJSON(data)
-        print (len(all_data))
+        bundle = osc_bundle_builder.OscBundleBuilder(
+        osc_bundle_builder.IMMEDIATELY)
         for id in range(len(all_data)):
             data = json.loads(all_data[id])
             while len(json.loads(json.dumps(data))) is 0:
                 await asyncio.sleep(1.0)
-            bundle = osc_bundle_builder.OscBundleBuilder(
-                osc_bundle_builder.IMMEDIATELY)
             self.output_address = self.generate_output_message(id)
-            print(self.output_address)
+            # print(self.output_address)
             msg = osc_message_builder.OscMessageBuilder(
                 address=self.output_address)
             for label, output_buffer in data.items():
@@ -87,25 +86,26 @@ class OSC_Handler:
             self.client.send(bundle)
 
     # e.g '/<id>/bitalino/A1'
-    async def output_individual(self, data, whole_sequence=0):
-        data = json.loads(data)
-        #printJSON(data)
+    async def output_individual(self, all_data, whole_sequence=0):
         bundle = osc_bundle_builder.OscBundleBuilder(
-            osc_bundle_builder.IMMEDIATELY)
-
-        for label in self.labels:
-            self.output_address += self.device_number + "/bitalino/" + label
-            msg = osc_message_builder.OscMessageBuilder(
-                address=output_address)
-            arg_to_add = data[label] if whole_sequence == 1 else data[label][0]
-            msg.add_arg(arg_to_add)
-            msg.build()
-            self.client.send(msg)
+        osc_bundle_builder.IMMEDIATELY)
+        for id in range(len(all_data)):
+            data = json.loads(all_data[id])
+            while len(json.loads(json.dumps(data))) is 0:
+                await asyncio.sleep(1.0)
+            for label, output_buffer in data.items():
+                self.output_address = self.generate_output_message(id) + "/" + label
+                msg = osc_message_builder.OscMessageBuilder(
+                    address=self.output_address)
+                arg_to_add = data[label] if whole_sequence == 1 else data[label][0]
+                msg.add_arg(arg_to_add)
+                bundle.add_content(msg.build())
+            bundle = bundle.build()
+            self.client.send(bundle)
         await asyncio.sleep(0.0)
 
     def generate_output_message(self, dev_id):
         return "/" + str(dev_id) + "/bitalino"
-
 
 def printJSON(decoded_json_input):
     try:

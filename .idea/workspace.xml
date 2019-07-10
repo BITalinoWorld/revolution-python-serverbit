@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/ServerBIT.py" line="469" mnemonic="3" />
+    <bookmark url="file://$PROJECT_DIR$/ServerBIT.py" line="471" mnemonic="3" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c402c0ad-fe6f-4bab-b96c-c6a629e1be2d" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ServerBIT.py" beforeDir="false" afterPath="$PROJECT_DIR$/ServerBIT.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ServerOSC.py" beforeDir="false" afterPath="$PROJECT_DIR$/ServerOSC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/config.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,37 +19,29 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ServerBIT.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
-              <caret line="457" column="17" selection-start-line="457" selection-start-column="17" selection-end-line="457" selection-end-column="17" />
-              <folding>
-                <element signature="e#690#1768#0" />
-                <element signature="e#942#966#0" />
-                <element signature="e#1002#1596#0" />
-                <element signature="e#1102#1576#0" />
-                <element signature="e#1213#1576#0" />
-                <element signature="e#1334#1576#0" />
-                <element signature="e#1505#1576#0" />
-                <element signature="e#1632#1768#0" />
-                <element signature="e#1788#2001#0" />
-                <element signature="e#2060#2726#0" />
-                <element signature="e#2060#2288#1" />
-                <element signature="e#2352#2457#0" />
-                <element signature="e#2508#2571#0" />
-                <element signature="e#2826#2869#0" />
-                <element signature="e#2901#2969#0" />
-              </folding>
+            <state relative-caret-position="221">
+              <caret line="489" selection-start-line="489" selection-end-line="489" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/config.json">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="170">
+              <caret line="10" column="24" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="24" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ServerOSC.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1156">
-              <caret line="75" column="57" selection-start-line="75" selection-start-column="57" selection-end-line="75" selection-end-column="57" />
+            <state relative-caret-position="255">
+              <caret line="97" column="32" selection-start-line="97" selection-start-column="32" selection-end-line="97" selection-end-column="32" />
             </state>
           </provider>
         </entry>
@@ -64,8 +58,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4828">
-              <caret line="284" column="28" selection-start-line="284" selection-start-column="28" selection-end-line="284" selection-end-column="28" />
+            <state relative-caret-position="5168">
+              <caret line="304" column="90" selection-start-line="304" selection-start-column="90" selection-end-line="304" selection-end-column="90" />
             </state>
           </provider>
         </entry>
@@ -114,36 +108,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>connecting</find>
-      <find>add</find>
-      <find>update_de</find>
-      <find>config</find>
-      <find>device-s</find>
-      <find>listDevices</find>
-      <find>dev_list_area</find>
-      <find>#device-s</find>
-      <find>waiting fo</find>
-      <find>list</find>
-      <find>devicetype_</find>
-      <find>chnz</find>
-      <find>test_connection</find>
-      <find>OSC_Data_Handler</find>
-      <find>WebSockets_Data_Handler</find>
-      <find>sys</find>
-      <find>restart</find>
-      <find>restart_app</find>
-      <find>print</find>
-      <find>sensor</find>
-      <find>OSC_Handler</find>
       <find>writin</find>
       <find>key,</find>
       <find>enumerat</find>
       <find>session.sensor_data_json</find>
       <find>streaming from</find>
-      <find>whole_sequence</find>
       <find>0.0</find>
-      <find>get_data_json</find>
       <find>sensor_data_json</find>
+      <find>boolea</find>
+      <find>consol</find>
+      <find>date_</find>
+      <find>date_out</find>
+      <find>date_ou</find>
+      <find>loop</find>
+      <find>restart</find>
+      <find>restart_</find>
+      <find>ut.os</find>
+      <find>thread</find>
+      <find>ConfigWebServer</find>
+      <find>get_data_json</find>
+      <find>main_device_handler</find>
+      <find>address</find>
+      <find>WebSockets_Data_Handler</find>
+      <find>ip_address</find>
+      <find>serve</find>
+      <find>conf_json['ip_address']</find>
+      <find>OSC_Handler</find>
+      <find>print</find>
+      <find>generate_output_message</find>
+      <find>whole_sequence</find>
+      <find>output_bundle</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -155,19 +149,18 @@
         <option value="$PROJECT_DIR$/openSoundBIT.py" />
         <option value="$PROJECT_DIR$/config.json" />
         <option value="$PROJECT_DIR$/deviceFinder.py" />
-        <option value="$PROJECT_DIR$/static/config.js" />
         <option value="$PROJECT_DIR$/config_only.py" />
-        <option value="$PROJECT_DIR$/ServerOSC.py" />
         <option value="$PROJECT_DIR$/yield_test.py" />
+        <option value="$PROJECT_DIR$/static/config.js" />
         <option value="$PROJECT_DIR$/ServerBIT.py" />
+        <option value="$PROJECT_DIR$/ServerOSC.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds" extendedState="4">
-    <option name="x" value="54" />
-    <option name="y" value="27" />
-    <option name="width" value="1771" />
-    <option name="height" value="1053" />
+  <component name="ProjectFrameBounds">
+    <option name="x" value="51" />
+    <option name="width" value="1774" />
+    <option name="height" value="1040" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="1" id="Add" />
@@ -177,6 +170,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Course" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -198,7 +192,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -306,9 +300,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="54" y="27" width="1771" height="1053" extended-state="4" />
+    <frame x="41" y="0" width="1419" height="832" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1556064" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15473609" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -319,9 +314,10 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32978722" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="8" visible="true" weight="0.3300866" />
-      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
-      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32978722" />
+      <window_info anchor="bottom" auto_hide="true" id="Terminal" order="8" type="SLIDING" weight="0.34019205" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" visible="true" weight="0.32921812" />
+      <window_info anchor="bottom" id="Python Console" order="10" weight="0.32921812" />
+      <window_info anchor="bottom" id="Educational.CheckDetails" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -346,13 +342,6 @@
         <state relative-caret-position="-8" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/config.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="16" selection-start-line="6" selection-start-column="16" selection-end-line="6" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/ClientBIT.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-8" />
@@ -363,44 +352,7 @@
         <state relative-caret-position="-1071" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/yield_test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="18" column="16" lean-forward="true" selection-start-line="18" selection-start-column="16" selection-end-line="18" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ServerBIT.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="457" column="17" selection-start-line="457" selection-start-column="17" selection-end-line="457" selection-end-column="17" />
-          <folding>
-            <element signature="e#690#1768#0" />
-            <element signature="e#942#966#0" />
-            <element signature="e#1002#1596#0" />
-            <element signature="e#1102#1576#0" />
-            <element signature="e#1213#1576#0" />
-            <element signature="e#1334#1576#0" />
-            <element signature="e#1505#1576#0" />
-            <element signature="e#1632#1768#0" />
-            <element signature="e#1788#2001#0" />
-            <element signature="e#2060#2726#0" />
-            <element signature="e#2060#2288#1" />
-            <element signature="e#2352#2457#0" />
-            <element signature="e#2508#2571#0" />
-            <element signature="e#2826#2869#0" />
-            <element signature="e#2901#2969#0" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ServerOSC.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1156">
-          <caret line="75" column="57" selection-start-line="75" selection-start-column="57" selection-end-line="75" selection-end-column="57" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/yield_test.py" />
     <entry file="file://$PROJECT_DIR$/config_only.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="7633">
@@ -410,8 +362,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/static/config.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4828">
-          <caret line="284" column="28" selection-start-line="284" selection-start-column="28" selection-end-line="284" selection-end-column="28" />
+        <state relative-caret-position="5168">
+          <caret line="304" column="90" selection-start-line="304" selection-start-column="90" selection-end-line="304" selection-end-column="90" />
         </state>
       </provider>
     </entry>
@@ -442,6 +394,27 @@
           <folding>
             <element signature="e#0#17#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" column="24" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ServerBIT.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="489" selection-start-line="489" selection-end-line="489" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ServerOSC.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="97" column="32" selection-start-line="97" selection-start-column="32" selection-end-line="97" selection-end-column="32" />
         </state>
       </provider>
     </entry>

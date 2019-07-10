@@ -142,16 +142,17 @@ class Riot_Device(PLUX_Device_Handler):
 
 def restart_app():
     time.sleep(1)
-    sys.exit(1)
+    if ut.OS == "windows":
+       restart = subprocess.Popen("start_win.bat", shell=True, stdout = subprocess.PIPE)
+       stdout, stderr = restart.communicate()
+    else:
+        sys.exit(1)
 #    os_list = ["linux", "windows"]
 #    if ut.OS not in os_list:
 #        import osx_statusbar_app
 #        osx_statusbar_app.restart()
 #    elif 'linux' in ut.OS:
 #        os.popen("./start_linux.sh")
-#    else:
-#        restart = subprocess.Popen("start_win.bat", shell=True, stdout = subprocess.PIPE)
-#        stdout, stderr = restart.communicate()
 
 def change_json_value(file,orig,new,isFinal):
     ##find and replace string in file, keeps formatting
@@ -321,8 +322,9 @@ class Configs(web.RequestHandler):
                     old_value = format + str(old_value).replace("'", '"')
                     new_value = format + str(new_config[key]).replace("'", '"')
                 #boolean attribute
-                if isinstance(old_value, bool):
-                    old_value = format = old_value
+                # if isinstance(old_value, bool):
+                #     old_value = format = str(old_value).lower()
+                #     new_value = format = str(new_value).lower()
                 else:
                     old_value = format + str(old_value)
                 if new_value not in old_value:
@@ -473,6 +475,7 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
 async def WebSockets_Data_Handler(ws, path):
     print('LISTENING')
     print(ws.port)
+    # print ("streaming data from device to %s:%i" % (path, ws.port))
     while True:
         if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
             await ws.send(session.sensor_data_json[0])
@@ -485,7 +488,10 @@ async def OSC_Data_Handler():
     while 1:
         # await session.OSC_Handler.sendTestBundle(5)
         if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
-            await session.OSC_Handler.output_bundle(session.sensor_data_json)
+            if (conf_json ['consolidate_outputs'] == False):
+                await session.OSC_Handler.output_bundle(session.sensor_data_json)
+            else:
+                await session.OSC_Handler.output_individual(session.sensor_data_json)
         else:
             print('waiting for data')
             await asyncio.sleep(3.0)
@@ -525,8 +531,7 @@ if __name__ == '__main__':
         rmtree(ut.home)
         restart_app()
     print("data received")
-    print("saving new config to %s" % ut.json_file_path)
-    sys.exit()
+    print("home folder %s" % ut.json_file_path)
     # import_modules()
     # check device id, wait for valid selection
     new_mac_addr = check_device_addr(conf_json['device'])
@@ -539,8 +544,8 @@ if __name__ == '__main__':
             time.sleep(1.0)
     else:
         time.sleep(3.0)
-    if 'websockets' in conf_json['protocol'].lower() and True:
-        start_server = websockets.serve(WebSockets_Data_Handler, conf_json['ip_address'], conf_json['port'])
+    if 'websockets' in conf_json['protocol'].lower():
+        start_server = websockets.serve(WebSockets_Data_Handler, '0.0.0.0', conf_json['port'])
     elif 'osc' in conf_json['protocol'].lower():
         session.OSC_Handler = OSC_Handler(conf_json['ip_address'], conf_json['port'], conf_json['labels'])
     try:
@@ -548,7 +553,7 @@ if __name__ == '__main__':
             main_device_loop.run_until_complete(start_server)
         elif 'osc' in conf_json['protocol'].lower():
             session.debug_info="main loop started"
-        #            main_device_loop.create_task(OSC_Data_Handler())
+            main_device_loop.create_task(OSC_Data_Handler())
         for module_name, module_class in session.external_modules.items():
             continue
         main_device_loop.create_task(main_device_handler(session.all_devices, conf_json['channels'], conf_json['sampling_rate'], conf_json['buffer_size'], conf_json['labels']))

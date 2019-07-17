@@ -160,11 +160,12 @@ def findDevices(OS, enable_servers, riot_server_ready):
         riot_lib = riot_handler()
         print("listing Riot devices")
         ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
-        try:
-            device_list.extend(riot_lib.fetch_devices(ip, port, 1))
-        except Exception as e:
-            print(e)
-            pass
+        device_list.extend(riot_lib.fetch_devices(ip, port, 1))
+        # try:
+        #     device_list.extend(riot_lib.fetch_devices(ip, port, 1))
+        # except Exception as e:
+        #     print(e)
+        #     pass
         print(device_list)
         # riot_handler.riot_handler()
     if enable_servers["Serial"]:

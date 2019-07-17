@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/ServerBIT.py" line="471" mnemonic="3" />
+    <bookmark url="file://$PROJECT_DIR$/ServerBIT.py" line="485" mnemonic="3" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c402c0ad-fe6f-4bab-b96c-c6a629e1be2d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ServerBIT.py" beforeDir="false" afterPath="$PROJECT_DIR$/ServerBIT.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ServerOSC.py" beforeDir="false" afterPath="$PROJECT_DIR$/ServerOSC.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/deviceFinder.py" beforeDir="false" afterPath="$PROJECT_DIR$/deviceFinder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/riot_device_handler.py" beforeDir="false" afterPath="$PROJECT_DIR$/riot_device_handler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/bit_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/bit_config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/static/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/config.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -19,29 +20,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ServerBIT.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="221">
-              <caret line="489" selection-start-line="489" selection-end-line="489" />
+            <state relative-caret-position="-246">
+              <caret line="468" column="8" selection-start-line="468" selection-start-column="8" selection-end-line="468" selection-end-column="8" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/config.json">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="170">
-              <caret line="10" column="24" selection-start-line="10" selection-start-column="5" selection-end-line="10" selection-end-column="24" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/ServerOSC.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="97" column="32" selection-start-line="97" selection-start-column="32" selection-end-line="97" selection-end-column="32" />
+            <state relative-caret-position="393">
+              <caret line="60" column="32" selection-start-line="60" selection-start-column="32" selection-end-line="60" selection-end-column="32" />
             </state>
           </provider>
         </entry>
@@ -49,7 +41,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config_only.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="7633">
+            <state>
               <caret line="466" column="57" selection-start-line="466" selection-start-column="57" selection-end-line="466" selection-end-column="57" />
             </state>
           </provider>
@@ -58,8 +50,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/static/config.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="5168">
-              <caret line="304" column="90" selection-start-line="304" selection-start-column="90" selection-end-line="304" selection-end-column="90" />
+            <state>
+              <caret line="129" column="34" selection-start-line="129" selection-start-column="34" selection-end-line="129" selection-end-column="34" />
             </state>
           </provider>
         </entry>
@@ -67,15 +59,10 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/config.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2227">
-              <caret line="131" column="16" selection-start-line="131" selection-start-column="12" selection-end-line="131" selection-end-column="16" />
+            <state>
+              <caret line="177" column="40" selection-start-line="177" selection-start-column="40" selection-end-line="177" selection-end-column="40" />
             </state>
           </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/start_mac.sh">
-          <provider selected="true" editor-type-id="text-editor" />
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
@@ -86,19 +73,19 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/deviceFinder.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2329">
-              <caret line="138" column="27" selection-start-line="138" selection-start-column="27" selection-end-line="138" selection-end-column="27" />
+            <state relative-caret-position="137">
+              <caret line="158" selection-start-line="158" selection-end-line="158" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/riot_finder.py">
+        <entry file="file://$PROJECT_DIR$/riot_device_handler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="16" column="52" selection-start-line="16" selection-start-column="52" selection-end-line="16" selection-end-column="52" />
+            <state relative-caret-position="319">
+              <caret line="47" column="28" selection-start-line="47" selection-start-column="17" selection-end-line="47" selection-end-column="28" />
               <folding>
-                <element signature="e#0#17#0" expanded="true" />
+                <element signature="e#39#54#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -108,36 +95,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>writin</find>
-      <find>key,</find>
-      <find>enumerat</find>
-      <find>session.sensor_data_json</find>
-      <find>streaming from</find>
-      <find>0.0</find>
+      <find>test_</find>
+      <find>protocol-s</find>
+      <find>msg</find>
+      <find>selected</find>
+      <find>update_ms</find>
+      <find>ServerBIT will be sending</find>
+      <find>test_connection</find>
+      <find>connect_devices</find>
+      <find>main_device_loop</find>
+      <find>test</find>
+      <find>session</find>
+      <find>session.main</find>
+      <find>main</find>
       <find>sensor_data_json</find>
-      <find>boolea</find>
-      <find>consol</find>
-      <find>date_</find>
-      <find>date_out</find>
-      <find>date_ou</find>
-      <find>loop</find>
       <find>restart</find>
-      <find>restart_</find>
-      <find>ut.os</find>
-      <find>thread</find>
-      <find>ConfigWebServer</find>
+      <find>getConfigFile</find>
+      <find>fetch_devices(</find>
+      <find>devicef</find>
+      <find>data_js</find>
+      <find>sessionl</find>
+      <find>test_c</find>
+      <find>findDevices</find>
+      <find>listDev</find>
+      <find>check_n</find>
+      <find>check_ne</find>
+      <find>riot_li</find>
+      <find>riot_lib</find>
+      <find>handler</find>
+      <find>main_de</find>
       <find>get_data_json</find>
-      <find>main_device_handler</find>
-      <find>address</find>
-      <find>WebSockets_Data_Handler</find>
-      <find>ip_address</find>
-      <find>serve</find>
-      <find>conf_json['ip_address']</find>
-      <find>OSC_Handler</find>
-      <find>print</find>
-      <find>generate_output_message</find>
-      <find>whole_sequence</find>
-      <find>output_bundle</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -148,18 +135,21 @@
       <list>
         <option value="$PROJECT_DIR$/openSoundBIT.py" />
         <option value="$PROJECT_DIR$/config.json" />
-        <option value="$PROJECT_DIR$/deviceFinder.py" />
         <option value="$PROJECT_DIR$/config_only.py" />
         <option value="$PROJECT_DIR$/yield_test.py" />
-        <option value="$PROJECT_DIR$/static/config.js" />
-        <option value="$PROJECT_DIR$/ServerBIT.py" />
         <option value="$PROJECT_DIR$/ServerOSC.py" />
+        <option value="$PROJECT_DIR$/start_win64.bat" />
+        <option value="$PROJECT_DIR$/config.html" />
+        <option value="$PROJECT_DIR$/static/config.js" />
+        <option value="$PROJECT_DIR$/deviceFinder.py" />
+        <option value="$PROJECT_DIR$/riot_device_handler.py" />
+        <option value="$PROJECT_DIR$/ServerBIT.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="51" />
-    <option name="width" value="1774" />
+    <option name="x" value="50" />
+    <option name="width" value="1775" />
     <option name="height" value="1040" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -170,7 +160,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Course" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -187,12 +176,13 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Course" />
       <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
+    <property name="settings.editor.selected.configurable" value="editor.preferences.fonts.default" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
@@ -300,10 +290,10 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="41" y="0" width="1419" height="832" extended-state="0" />
+    <frame x="40" y="0" width="1420" height="832" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15473609" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15462428" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -313,9 +303,9 @@
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32978722" />
-      <window_info anchor="bottom" auto_hide="true" id="Terminal" order="8" type="SLIDING" weight="0.34019205" />
-      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" visible="true" weight="0.32921812" />
+      <window_info anchor="bottom" id="Version Control" order="7" weight="0.32921812" />
+      <window_info anchor="bottom" id="Terminal" order="8" visible="true" weight="0.34019205" />
+      <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.32921812" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32921812" />
       <window_info anchor="bottom" id="Educational.CheckDetails" order="11" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -330,6 +320,16 @@
           <url>file://$PROJECT_DIR$/ServerBIT.py</url>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ServerBIT.py</url>
+          <line>581</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/ServerBIT.py</url>
+          <line>154</line>
+          <option name="timeStamp" value="5" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
@@ -342,61 +342,7 @@
         <state relative-caret-position="-8" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ClientBIT.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-8" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/riot_device_handler.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1071" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/yield_test.py" />
-    <entry file="file://$PROJECT_DIR$/config_only.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="7633">
-          <caret line="466" column="57" selection-start-line="466" selection-start-column="57" selection-end-line="466" selection-end-column="57" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/static/config.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5168">
-          <caret line="304" column="90" selection-start-line="304" selection-start-column="90" selection-end-line="304" selection-end-column="90" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/config.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2227">
-          <caret line="131" column="16" selection-start-line="131" selection-start-column="12" selection-end-line="131" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/start_mac.sh">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/start_linux.sh">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/deviceFinder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2329">
-          <caret line="138" column="27" selection-start-line="138" selection-start-column="27" selection-end-line="138" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/riot_finder.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="16" column="52" selection-start-line="16" selection-start-column="52" selection-end-line="16" selection-end-column="52" />
-          <folding>
-            <element signature="e#0#17#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/config.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="170">
@@ -404,17 +350,83 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ServerBIT.py">
+    <entry file="file://$PROJECT_DIR$/start_mac.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/riot_finder.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="489" selection-start-line="489" selection-end-line="489" />
+        <state relative-caret-position="17">
+          <caret line="29" column="31" selection-start-line="29" selection-start-column="31" selection-end-line="29" selection-end-column="31" />
+          <folding>
+            <element signature="e#0#17#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/start_win64.bat">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" column="31" selection-start-line="1" selection-start-column="31" selection-end-line="1" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ClientBIT.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-31" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config_only.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="466" column="57" selection-start-line="466" selection-start-column="57" selection-end-line="466" selection-end-column="57" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/static/config.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="129" column="34" selection-start-line="129" selection-start-column="34" selection-end-line="129" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/config.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="177" column="40" selection-start-line="177" selection-start-column="40" selection-end-line="177" selection-end-column="40" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/start_linux.sh">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
     <entry file="file://$PROJECT_DIR$/ServerOSC.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="97" column="32" selection-start-line="97" selection-start-column="32" selection-end-line="97" selection-end-column="32" />
+        <state relative-caret-position="393">
+          <caret line="60" column="32" selection-start-line="60" selection-start-column="32" selection-end-line="60" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/deviceFinder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="137">
+          <caret line="158" selection-start-line="158" selection-end-line="158" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/riot_device_handler.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="319">
+          <caret line="47" column="28" selection-start-line="47" selection-start-column="17" selection-end-line="47" selection-end-column="28" />
+          <folding>
+            <element signature="e#39#54#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ServerBIT.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-246">
+          <caret line="468" column="8" selection-start-line="468" selection-start-column="8" selection-end-line="468" selection-end-column="8" />
         </state>
       </provider>
     </entry>

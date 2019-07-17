@@ -46,7 +46,6 @@ class riot_handler:
             res = res[:-1] + "}"
             #if len(cl) > 0: cl[-1].write_message(res)
             self.device_data[int(d_id[1])] = res
-            print(self.device_data[0])
         except:
             traceback.print_exc()
             os._exit(0)
@@ -62,17 +61,28 @@ class riot_handler:
         self.osc_server_started = True
         server.serve_forever()
 
+    # def start_riot_listener(self, session_loop, ip, port):
+    #     riot_dispatcher = dispatcher.Dispatcher()
+    #     riot_dispatcher.map("/*/raw", self.assign_riot_data)
+    #     # riot_dispatcher.map("/*/{raw, bitalino}", assign_bitalino_data)
+    #     session_loop = asyncio.get_event_loop()
+    #
+    #     server = osc_server.AsyncIOOSCUDPServer(
+    #       (ip, port), riot_dispatcher, session_loop)
+    #     print("Serving on {}".format(server._server_address))
+    #     self.osc_server_started = True
+    #     server.serve()
+
     # async def webApp(ws, path):
-    #     device_id = ws.port - 9001
-    # #    print('LISTENING')
+    #     print('LISTENING')
     #     print (ut.device_data[device_id])
     #     print ("streaming data from device %i to port %i" % (device_id, ws.port))
     #     while ut.device_data[device_id] != "":
     #         await ws.send(ut.device_data[device_id])
     #         await asyncio.sleep(0.1)
 
-    def testApp():
-        thread.start_new_thread(self.start_riot_listener, (self.ip , self.port)) # one thread to listen to all devices on the same ip & port
+    # def testApp():
+    #     thread.start_new_thread(self.start_riot_listener, (self.ip , self.port)) # one thread to listen to all devices on the same ip & port
 
     # -3- stream device data to network
     def fetch_devices(self, listener_ip, listener_port, find_new):
@@ -101,15 +111,18 @@ class riot_handler:
         #     print ()
         #     sys.exit(1)
 
-    def read_data(self):
-        # print(self.device_data[0])
-        main_device_loop = asyncio.get_event_loop()
+    def read_data(self, listener_ip, listener_port, find_new):
+        self.ip = listener_ip
+        self.port = listener_port
+        osc_devices = []
+        max_counter = 0
         try:
-            main_device_loop.run_until_complete(testApp())
+            thread.start_new_thread(self.start_riot_listener, (listener_ip, listener_port)) # one thread to listen to all devices on the same ip & port
+            while not self.osc_server_started : time.sleep(0.1)
+            # return self.device_data[0]
         except Exception as e:
-            print(e)
-        finally:
-            main_device_loop.stop()
+            print (e)
+            # return []
 
 def update_progress(count, total, status=''):
     # As suggested by Rom Ruben (see: http://stackoverflow.com/questions/3173320/text-progress-bar-in-the-console/27871113#comment50529068_27871113)

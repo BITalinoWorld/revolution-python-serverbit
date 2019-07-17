@@ -127,17 +127,19 @@ function update_device_list(dl) {
 }
 
 function update_msg_info() {
-  if ($("#device-s").val() !== "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB" || $("#device-s").val() !== ""){
-    if($("#msg_info").is(":hidden"))
-    $("#msg_info").show()
-    var info = [$('#chn_field').find('input[type="checkbox"]:checked').length+4, $("#ip_address-s").val(),$("#port-s").val(), "/0/bitalino"]
-    if (dev_entry.length > 1)
-    info[3] = info[3].replace("0", "{"+(Array.apply(null, {length: dev_entry.length}).map(Number.call, Number))+"}")
-    if ($("#consolidate_outputs-s").val() === "true")
-    info[3] = info[3].replace("0","all")
-    var msg_info = "ServerBIT will be sending "+info[0]+" values to "+info[1]+":"+info[2]+" OSC_address: "+info[3]
-    $("#msg_info").html(msg_info)
-  }
+  if($("#protocol-s").val() = "OSC") {
+      if ($("#device-s").val() !== "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB" || $("#device-s").val() !== ""){
+        if($("#msg_info").is(":hidden"))
+        $("#msg_info").show()
+        var info = [$('#chn_field').find('input[type="checkbox"]:checked').length+4, $("#ip_address-s").val(),$("#port-s").val(), "/0/bitalino"]
+        if (dev_entry.length > 1)
+            info[3] = info[3].replace("0", "{"+(Array.apply(null, {length: dev_entry.length}).map(Number.call, Number))+"}")
+        if ($("#consolidate_outputs-s").val() === "true")
+            info[3] = info[3] + "/<ch>"
+        var msg_info = "ServerBIT will be sending "+info[0]+" values to "+info[1]+":"+info[2]+" OSC_address: "+info[3]
+        $("#msg_info").html(msg_info)
+      }
+   }
   // else {
   //   $("#msg_info").show()
   //   $("#msg_info").html(msg_info)
@@ -302,7 +304,6 @@ $(document).on('submit', function(){
     }
   }
   entry_inputs["OSC_config-s"] = $("#OSC_config-s").html()
-  entry_inputs["consolidate_outputs-s"] = jsUcfirst(entry_inputs["consolidate_outputs-s"])
   console.log(entry_inputs)
 
   json_entry_inputs = {

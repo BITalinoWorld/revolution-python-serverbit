@@ -127,7 +127,7 @@ function update_device_list(dl) {
 }
 
 function update_msg_info() {
-  if($("#protocol-s").val() = "OSC") {
+  if($("option:selected","#protocol-s").text() == "OSC") {
       if ($("#device-s").val() !== "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB" || $("#device-s").val() !== ""){
         if($("#msg_info").is(":hidden"))
         $("#msg_info").show()

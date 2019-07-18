@@ -118,8 +118,8 @@
 	<table style=" width: 50%;">
 		<tbody>
 			<tr>
-				<td style=" width: 50%;"><input type="button" value="Add Device" class="device-list_add"> </td>
-				<td style=" width: 50%;"><input type="button" value="Update Device List" id="update-device-list"> </td>
+				<td style=" width: 50%;"><input type="button" value="New Device" class="device-list_add"> </td>
+				<td style=" width: 50%;"><input type="button" value="Submit Device List" id="update-device-list"> </td>
 			<!-- </td> -->
 		</tr>
 	</tbody>
@@ -176,7 +176,7 @@
 <!-- <label for="{{key}}-s" class="ui-hidden-accessible">{{key}}</label> -->
 <select name="flip-8" id="{{key}}-s" data-role="flipswitch" data-corners="false">
     <option value="false">false</option>
-    <option value="true">true</option>
+    <option  selected="selected" value="true">true</option>
 </select>
 {% else %}
 <input class="input_toggle" name="textinput-s" id="{{key}}-s"  value={{crt_conf[key]}} type="text">

@@ -116,11 +116,10 @@ class BITalino_Device(PLUX_Device_Handler):
         self.active_device.stop()
 
     async def get_data_json(self, nsamples, labels, dev_index):
-        device = self.active_device
         ch_mask = numpy.array(self.ch_mask) - 1
         cols = numpy.arange(len(ch_mask)+5)
         labels = ["nSeq", "I1", "I2", "O1"] + labels
-        data = device.read(nsamples)
+        data = self.active_device.read(nsamples)
         res = "{"
         for i in cols:
             idx = i
@@ -157,15 +156,15 @@ class Riot_Device(PLUX_Device_Handler):
 
 def restart_app():
     time.sleep(1)
+    os_list = ["linux", "windows"]
+    if ut.OS not in os_list:
+        import osx_statusbar_app
+        osx_statusbar_app.restart()
     if ut.OS == "windows":
        restart = subprocess.Popen("start_win64.bat", shell=True, stdout = subprocess.PIPE)
        stdout, stderr = restart.communicate()
     else:
         sys.exit(1)
-#    os_list = ["linux", "windows"]
-#    if ut.OS not in os_list:
-#        import osx_statusbar_app
-#        osx_statusbar_app.restart()
 #    elif 'linux' in ut.OS:
 #        os.popen("./start_linux.sh")
 
@@ -374,7 +373,7 @@ def getConfigFile():
         for file in ['ClientBIT.html', 'static/jquery.flot.js', 'static/jquery.js', 'Preferences.html', 'modules/modules.txt']:
             with open(ut.home+'/'+file, 'w') as outfile:
                 outfile.write(open(file).read())
-        time.sleep(3)
+        time.sleep(1)
         restart_app()
 
 def dynamic_import(abs_module_path, class_name):
@@ -506,7 +505,7 @@ async def OSC_Data_Handler():
     while 1:
         # await session.OSC_Handler.sendTestBundle(5)
         if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
-            if (conf_json ['consolidate_outputs'] == False):
+            if (conf_json ['consolidate_outputs'] == True):
                 await session.OSC_Handler.output_bundle(session.sensor_data_json)
             else:
                 await session.OSC_Handler.output_individual(session.sensor_data_json)

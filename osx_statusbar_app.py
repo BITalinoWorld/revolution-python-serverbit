@@ -3,8 +3,9 @@ import os
 import rumps
 
 def restart():
-    os.popen("./start_mac.sh")
+    #os.popen("./start_mac.sh")
     # os.popen("pkill -f ServerBIT")
+    os.popen("pkill -f Python")
     rumps.quit_application()
 
 def init_rumps_osx():

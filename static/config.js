@@ -131,15 +131,21 @@ function update_msg_info() {
       if ($("#device-s").val() !== "WINDOWS-XX:XX:XX:XX:XX:XX|MAC-/dev/tty.BITalino-XX-XX-DevB" || $("#device-s").val() !== ""){
         if($("#msg_info").is(":hidden"))
         $("#msg_info").show()
+        $("#consolidate_outputs-s").flipswitch( "option", "disabled", false );
         var info = [$('#chn_field').find('input[type="checkbox"]:checked').length+4, $("#ip_address-s").val(),$("#port-s").val(), "/0/bitalino"]
-        if (dev_entry.length > 1)
-            info[3] = info[3].replace("0", "{"+(Array.apply(null, {length: dev_entry.length}).map(Number.call, Number))+"}")
-        if ($("#consolidate_outputs-s").val() === "true")
-            info[3] = info[3] + "/<ch>"
-        var msg_info = "ServerBIT will be sending "+info[0]+" values to "+info[1]+":"+info[2]+" OSC_address: "+info[3]
-        $("#msg_info").html(msg_info)
+        if (dev_entry.length > 0){
+          if (dev_entry.length > 1)
+              info[3] = info[3].replace("0", "{"+(Array.apply(null, {length: dev_entry.length}).map(Number.call, Number))+"}")
+          if ($("#consolidate_outputs-s").val() === "false")
+              info[3] = info[3] + "/<ch>"
+          var msg_info = "ServerBIT will be sending "+info[0]+" values to "+info[1]+":"+info[2]+" OSC_address: "+info[3]
+          $("#msg_info").html(msg_info)
+        }
       }
    }
+  else{
+    $("#consolidate_outputs-s").flipswitch( "option", "disabled", true );
+  }
   // else {
   //   $("#msg_info").show()
   //   $("#msg_info").html(msg_info)
@@ -327,11 +333,11 @@ $(document).on('submit', function(){
     async: 'true',
     data: JSON.stringify(json_entry_inputs),
     success: function (result) {
-      window.location.href = 'http://localhost:9001/v1/configs'
+      window.location.href = 'http://localhost:9001/config'
     },
     error: function (request,error) {
       alert(request.responseText);
-      window.location.href = 'http://localhost:9001/v1/'
+      window.location.href = 'http://localhost:9001/config'
     }
   })
 });

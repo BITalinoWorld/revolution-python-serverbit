@@ -14,7 +14,7 @@ from time import sleep
 
 class OSC_Handler:
     device_name = "/bitalino"
-    data_feature = "/raw/"
+    data_feature = "/raw"
     output_address = ""
     labels = []
 

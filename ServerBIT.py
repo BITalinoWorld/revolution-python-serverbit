@@ -374,7 +374,8 @@ def getConfigFile():
             with open(ut.home+'/'+file, 'w') as outfile:
                 outfile.write(open(file).read())
         time.sleep(1)
-        restart_app()
+        run()
+#        restart_app()
 
 def dynamic_import(abs_module_path, class_name):
     module_object = import_module(abs_module_path)
@@ -527,8 +528,7 @@ class ConfigWebServer(threading.Thread):
 
 ConfigWebServer().start()
 
-if __name__ == '__main__':
-    # ut.getBioPLUX()
+def run():
     ut.OS = platform.system().lower()
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'
@@ -541,7 +541,7 @@ if __name__ == '__main__':
             "riot_port": conf_json['OSC_config'][1],
             "riot_ssid": conf_json['OSC_config'][2],
             "net_interface_type": conf_json['OSC_config'][3]
-        }
+    }
     except KeyError as ke:
         session.debug_info = "invalid json file in %s" % ut.json_file_path
         print ("invalid json file in %s" % ut.json_file_path)
@@ -562,7 +562,7 @@ if __name__ == '__main__':
         time.sleep(3.0)
     if 'websockets' in conf_json['protocol'].lower():
         start_server = websockets.serve(WebSockets_Data_Handler, '127.0.0.1', conf_json['port'])
-        # start_server = websockets.serve(WebSockets_Data_Handler, '0.0.0.0', conf_json['port'])
+    # start_server = websockets.serve(WebSockets_Data_Handler, '0.0.0.0', conf_json['port'])
     elif 'osc' in conf_json['protocol'].lower():
         session.OSC_Handler = OSC_Handler(conf_json['ip_address'], conf_json['port'], conf_json['labels'])
     try:
@@ -583,3 +583,6 @@ if __name__ == '__main__':
         for dev_index, device in enumerate(session.active_device_list):
             device.disconnect()
         session.main_device_loop.stop()
+
+if __name__ == '__main__':
+    run();

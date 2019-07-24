@@ -276,7 +276,6 @@ class WebConsoleHandler(websocket.WebSocketHandler):
         net_interface_type, ssid = net.detect_net_config(riot_interface_type)
         if ssid is None:
             console_str = "Please connect to a WiFi network and try again"
-            self.write( json.dumps(console_str) )
             return
         # -2.2- get serverBIT host ipv4 address
         ipv4_addr = net.detect_ipv4_address(net_interface_type)
@@ -285,16 +284,17 @@ class WebConsoleHandler(websocket.WebSocketHandler):
         if ssid not in riot_ssid:
             print ('{:^24s}'.format("====================="))
             console_str = "currently connected to '%s', please connect to the same network as the R-IoT (%s)" % (ssid, riot_ssid)
-            self.write( json.dumps(console_str) )
             return
-
+        
         # -2.4- change host ipv4 to match the R-IoT module if required
         if ut.enable_servers["OSC_config"]["riot_ip"] not in ipv4_addr:
             console_str = ("The computer's IPv4 address must be changed to match \nrun the following command to reconfigure your wireless settings ||| Continue")
+            print(console_str)
             ut.my_ipv4_addr = ipv4_addr
             ut.net_interface_type = net_interface_type
             ut.riot_server_ready = True
-            self.write( json.dumps(console_str) )
+        
+        self.write( json.dumps(console_str) )
 
     def post(self):
         net = riot_net_config(ut.OS)

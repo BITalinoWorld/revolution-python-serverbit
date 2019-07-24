@@ -21,6 +21,7 @@ wprimett@plux.info
 """
 import re
 from riot_device_handler import *
+riot_lib = riot_handler()
 
 regex_bitalino = re.compile('[b|B][i|I][t|T][a|A][l|L][i|I][n|N][o|O]')
 regex_bioplux = re.compile('[b|B][i|I][o|O][p|P][l|L][u|U][x|X]')
@@ -114,7 +115,6 @@ def findDevicesManually(device_type_connection, device_id, device_type):
     device_list.append([device_name, device_connection, device_type])
     return device_list
 
-
 def findDevices(OS, enable_servers, riot_server_ready):
     starters = ['BLE', 'BTH']
     device_list = []
@@ -157,15 +157,14 @@ def findDevices(OS, enable_servers, riot_server_ready):
                     pass
     ### OSC/riot devices
     if enable_servers["OSC"] and riot_server_ready:
-        riot_lib = riot_handler()
         print("listing Riot devices")
         ip, port = enable_servers['OSC_config']['riot_ip'], enable_servers['OSC_config']['riot_port']
-        device_list.extend(riot_lib.fetch_devices(ip, port, 1))
-        # try:
-        #     device_list.extend(riot_lib.fetch_devices(ip, port, 1))
-        # except Exception as e:
-        #     print(e)
-        #     pass
+#        device_list.extend(riot_lib.fetch_devices(ip, port, 1))
+        try:
+            device_list.extend(riot_lib.fetch_devices(ip, port, 1))
+        except Exception as e:
+            print(e)
+            pass
         print(device_list)
         # riot_handler.riot_handler()
     if enable_servers["Serial"]:

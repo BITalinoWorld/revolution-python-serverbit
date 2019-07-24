@@ -222,6 +222,7 @@ function start_osc_server() {
       update_console(data)
     },
     error: function (request,error) {
+      console.log(error)
       debug_text(error);
     }
   });

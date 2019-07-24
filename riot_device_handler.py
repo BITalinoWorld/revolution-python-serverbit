@@ -24,6 +24,7 @@ class riot_handler:
     ip = ""
     port = 8080
     protocol = "OSC"
+    server = None
 
     def new_device(self, n):
         print ("new device connected!")
@@ -55,11 +56,11 @@ class riot_handler:
         riot_dispatcher.map("/*/raw", self.assign_riot_data)
         # riot_dispatcher.map("/*/{raw, bitalino}", assign_bitalino_data)
 
-        server = osc_server.ThreadingOSCUDPServer(
+        self.server = osc_server.ThreadingOSCUDPServer(
           (ip, port), riot_dispatcher)
-        print("Serving on {}".format(server.server_address))
+        print("Serving on {}".format(self.server.server_address))
         self.osc_server_started = True
-        server.serve_forever()
+        self.server.serve_forever()
 
     # def start_riot_listener(self, session_loop, ip, port):
     #     riot_dispatcher = dispatcher.Dispatcher()
@@ -91,8 +92,9 @@ class riot_handler:
         osc_devices = []
         max_counter = 0
         try:
-            thread.start_new_thread(self.start_riot_listener, (listener_ip, listener_port)) # one thread to listen to all devices on the same ip & port
-            while not self.osc_server_started : time.sleep(0.1)
+            if not self.osc_server_started:
+                thread.start_new_thread(self.start_riot_listener, (listener_ip, listener_port)) # one thread to listen to all devices on the same ip & port
+                while not self.osc_server_started : time.sleep(0.1)
             if find_new == 1: timer(5, text="searching for devices on this network")
             while self.device_data[0] == "" or len(self.device_ids) == 0:
                 print ("no new devices found")

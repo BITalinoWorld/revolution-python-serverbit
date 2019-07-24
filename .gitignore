@@ -1,2 +1,7 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
 /build/*
 *.iss
+
+.DS_Store
+.idea

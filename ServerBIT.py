@@ -529,6 +529,7 @@ class ConfigWebServer(threading.Thread):
 ConfigWebServer().start()
 
 def run():
+    global conf_json
     ut.OS = platform.system().lower()
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'

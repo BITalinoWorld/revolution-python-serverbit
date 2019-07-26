@@ -158,9 +158,13 @@ def restart_app():
     time.sleep(1)
     os_list = ["linux", "windows"]
     if ut.OS not in os_list:
-        import osx_statusbar_app
-        osx_statusbar_app.restart()
-    if ut.OS == "windows":
+        print("QUITAPP\n")
+        try:
+            import osx_statusbar_app
+            osx_statusbar_app.restart()
+        except:
+            pass
+    if ut.OS == os_list[1]:
        restart = subprocess.Popen("start_win64.bat", shell=True, stdout = subprocess.PIPE)
        stdout, stderr = restart.communicate()
     else:
@@ -533,7 +537,7 @@ def run():
     ut.OS = platform.system().lower()
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'
-    start_gui()
+#    start_gui()
     try:
         conf_json = getConfigFile()
         conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])

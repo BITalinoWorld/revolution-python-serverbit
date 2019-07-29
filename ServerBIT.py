@@ -474,19 +474,18 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
     while True:
         dev_index = 0
         device = active_device_list[dev_index]
-        await device.get_data_json(nsamples, labels, dev_index)
-#        try:
-#            #                print('streaming from: %s (%s)' % (device.addr, dev_index))
-#            await device.get_data_json(nsamples, labels, dev_index)
-#            # await print_device_data()
-#        except Exception as e:
-#            print(e)
-#            print ("connection to %s dropped" % device.addr)
-#            session.debug_text = e
-#            session.active_device_list.remove(device) # remove device connection
-#            session.inactive_device_list.append(str(device.addr))
-#            device.active_device = None
-#            pass
+        try:
+            #                print('streaming from: %s (%s)' % (device.addr, dev_index))
+            await device.get_data_json(nsamples, labels, dev_index)
+            # await print_device_data()
+        except Exception as e:
+            print(e)
+            print ("connection to %s dropped" % device.addr)
+            session.debug_text = e
+            session.active_device_list.remove(device) # remove device connection
+            session.inactive_device_list.append(str(device.addr))
+            device.active_device = None
+            pass
     if len(session.active_device_list) != 0:
         return
 

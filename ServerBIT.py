@@ -474,18 +474,19 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
     while True:
         dev_index = 0
         device = active_device_list[dev_index]
-        try:
-            #                print('streaming from: %s (%s)' % (device.addr, dev_index))
-            await device.get_data_json(nsamples, labels, dev_index)
-            # await print_device_data()
-        except Exception as e:
-            print(e)
-            print ("connection to %s dropped" % device.addr)
-            session.debug_text = e
-            session.active_device_list.remove(device) # remove device connection
-            session.inactive_device_list.append(str(device.addr))
-            device.active_device = None
-            pass
+        await device.get_data_json(nsamples, labels, dev_index)
+#        try:
+#            #                print('streaming from: %s (%s)' % (device.addr, dev_index))
+#            await device.get_data_json(nsamples, labels, dev_index)
+#            # await print_device_data()
+#        except Exception as e:
+#            print(e)
+#            print ("connection to %s dropped" % device.addr)
+#            session.debug_text = e
+#            session.active_device_list.remove(device) # remove device connection
+#            session.inactive_device_list.append(str(device.addr))
+#            device.active_device = None
+#            pass
     if len(session.active_device_list) != 0:
         return
 
@@ -496,10 +497,10 @@ async def WebSockets_Data_Handler(ws, path):
     # print ("streaming data from device to %s:%i" % (path, ws.port))
     while True:
         # print(session.sensor_data_json[0])
-        if (isinstance(session.active_device_list[0], Riot_Device)):
-            session.sensor_data_json[0] = session.riot_lib.device_data[0]
         # print(session.riot_lib.device_data[0])
         if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
+            if (isinstance(session.active_device_list[0], Riot_Device)):
+                session.sensor_data_json[0] = session.riot_lib.device_data[0]
             await ws.send(session.sensor_data_json[0])
         else:
             print('waiting for data')

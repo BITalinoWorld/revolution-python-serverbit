@@ -112,7 +112,7 @@ class BITalino_Device(PLUX_Device_Handler):
         self.active_device = BITalino(self.addr)
     
     def start(self):
-        self.active_device.start(self.srate, numpy.array(self.ch_mask) - 1)
+        self.active_device.start(self.srate, self.ch_mask)
 
     def disconnect(self):
         self.active_device.stop()
@@ -448,11 +448,9 @@ def connect_devices(all_devices, ch_mask, srate, wait_time=None):
             session.debug_info = e
             if mac_addr not in session.inactive_device_list:
                 session.inactive_device_list.append(mac_addr)
-#            await asyncio.sleep(2.0)
-            time.sleep(2.0)
+            time.sleep(2)
             continue # move onto next device in list
     wait_time = 0.0 if wait_time is None else wait_time
-#    await asyncio.sleep(wait_time)
     time.sleep(wait_time)
     return
 
@@ -467,6 +465,7 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
     # 1. first attempt to connect all devices
     # ip, port = ut.enable_servers['OSC_config']['riot_ip'], ut.enable_servers['OSC_config']['riot_port']
     while len(session.active_device_list) == 0:
+#        connect_devices(all_devices, ch_mask, srate)
         connect_devices(all_devices, ch_mask, srate)
         await asyncio.sleep(5)
     # 2. re-attept to connect / restart dropped connections
@@ -505,11 +504,12 @@ async def WebSockets_Data_Handler(ws, path):
     # print ("streaming data from device to %s:%i" % (path, ws.port))
     while True:
         # print(session.sensor_data_json[0])
-        # print(session.riot_lib.device_data[0])
-        if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
+        if (sum(dev is not None for dev in session.active_device_list)):
+            if (sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
+                await ws.send(session.sensor_data_json[0])
             if (isinstance(session.active_device_list[0], Riot_Device)):
                 session.sensor_data_json[0] = session.riot_lib.device_data[0]
-            await ws.send(session.sensor_data_json[0])
+                await ws.send(session.sensor_data_json[0])
         else:
             print('waiting for data')
             await asyncio.sleep(3.0)

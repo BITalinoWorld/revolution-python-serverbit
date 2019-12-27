@@ -39,7 +39,7 @@ python_osc == 1.6.8
 qtaf == 5.4.30
 
 # osx_statusbar_app.py: 3,35
-rumps == 0.2.2
+rumps == 0.2.2; platform_system == "Darwin"
 
 # ServerBIT.py: 3
 # config_only.py: 3

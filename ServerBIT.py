@@ -65,7 +65,7 @@ class Global:
     all_devices = []
     active_device_list = []
     inactive_device_list = []
-    sensor_data_json = [json.dumps({})]
+    sensor_data_json = []
     debug_info = ""
     external_modules = {}
     main_device_loop = None
@@ -421,6 +421,7 @@ def check_device_addr(addrs):
             pass
     for mac_addr, type in addrs:
         print(mac_addr)
+        session.sensor_data_json.append(json.dumps({})
         try:
             #type = deviceFinder.check_type(str(mac_addr))
             if 'bitalino' in type.lower():

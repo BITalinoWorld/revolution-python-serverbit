@@ -421,9 +421,9 @@ def check_device_addr(addrs):
             pass
     for mac_addr, type in addrs:
         print(mac_addr)
-        session.sensor_data_json.append(json.dumps({})
         try:
             #type = deviceFinder.check_type(str(mac_addr))
+            session.sensor_data_json.append(json.dumps({}))
             if 'bitalino' in type.lower():
                 session.all_devices.append(BITalino_Device(mac_addr, type))
             elif 'r-iot (osc)' in type.lower():

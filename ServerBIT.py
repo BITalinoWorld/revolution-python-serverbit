@@ -110,6 +110,8 @@ class BITalino_Device(PLUX_Device_Handler):
         self.ch_mask = ch_mask
         self.srate = srate
         self.active_device = BITalino(self.addr)
+    
+    def start(self):
         self.active_device.start(self.srate, self.ch_mask)
 
     def disconnect(self):
@@ -126,7 +128,7 @@ class BITalino_Device(PLUX_Device_Handler):
             if (i > 4): idx = ch_mask[i - 5] + 5
             res += '"' + labels[idx] + '":' + tostring(data[:, i]) + ','
         res = res[:-1] + "}"
-        #print(res)
+#        print(res)
         session.sensor_data_json[0] = res
         if len(json.loads(json.dumps(session.sensor_data_json[0]))) == 0:
             session.sensor_data_json[0] = res
@@ -146,6 +148,9 @@ class Riot_Device(PLUX_Device_Handler):
             print ("could not connect to: %s (%s)" % (self.addr, self.type))
             pass
 
+    def start(self):
+        return 0
+
     def disconnect(self):
         return 0
 
@@ -158,9 +163,13 @@ def restart_app():
     time.sleep(1)
     os_list = ["linux", "windows"]
     if ut.OS not in os_list:
-        import osx_statusbar_app
-        osx_statusbar_app.restart()
-    if ut.OS == "windows":
+        print("QUITAPP\n")
+        try:
+            import osx_statusbar_app
+            osx_statusbar_app.restart()
+        except:
+            pass
+    if ut.OS == os_list[1]:
        restart = subprocess.Popen("start_win64.bat", shell=True, stdout = subprocess.PIPE)
        stdout, stderr = restart.communicate()
     else:
@@ -276,6 +285,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
         net_interface_type, ssid = net.detect_net_config(riot_interface_type)
         if ssid is None:
             console_str = "Please connect to a WiFi network and try again"
+            self.write( json.dumps(console_str) )
             return
         # -2.2- get serverBIT host ipv4 address
         ipv4_addr = net.detect_ipv4_address(net_interface_type)
@@ -284,8 +294,9 @@ class WebConsoleHandler(websocket.WebSocketHandler):
         if ssid not in riot_ssid:
             print ('{:^24s}'.format("====================="))
             console_str = "currently connected to '%s', please connect to the same network as the R-IoT (%s)" % (ssid, riot_ssid)
+            self.write( json.dumps(console_str) )
             return
-        
+                
         # -2.4- change host ipv4 to match the R-IoT module if required
         if ut.enable_servers["OSC_config"]["riot_ip"] not in ipv4_addr:
             console_str = ("The computer's IPv4 address must be changed to match \nrun the following command to reconfigure your wireless settings ||| Continue")
@@ -293,7 +304,7 @@ class WebConsoleHandler(websocket.WebSocketHandler):
             ut.my_ipv4_addr = ipv4_addr
             ut.net_interface_type = net_interface_type
             ut.riot_server_ready = True
-        
+
         self.write( json.dumps(console_str) )
 
     def post(self):
@@ -421,7 +432,7 @@ def check_device_addr(addrs):
         print ("connecting to %s ..." % session.all_devices)
         return addrs
 
-async def connect_devices(all_devices, ch_mask, srate, wait_time=None):
+def connect_devices(all_devices, ch_mask, srate, wait_time=None):
     ch_mask = numpy.array(ch_mask) - 1
     for device in all_devices:
         mac_addr = str(device.addr)
@@ -437,10 +448,10 @@ async def connect_devices(all_devices, ch_mask, srate, wait_time=None):
             session.debug_info = e
             if mac_addr not in session.inactive_device_list:
                 session.inactive_device_list.append(mac_addr)
-            await asyncio.sleep(2.0)
+            time.sleep(2)
             continue # move onto next device in list
     wait_time = 0.0 if wait_time is None else wait_time
-    await asyncio.sleep(wait_time)
+    time.sleep(wait_time)
     return
 
 async def print_device_data():
@@ -454,34 +465,35 @@ async def main_device_handler(all_devices, ch_mask, srate, nsamples, labels):
     # 1. first attempt to connect all devices
     # ip, port = ut.enable_servers['OSC_config']['riot_ip'], ut.enable_servers['OSC_config']['riot_port']
     while len(session.active_device_list) == 0:
-        await connect_devices(all_devices, ch_mask, srate)
+#        connect_devices(all_devices, ch_mask, srate)
+        connect_devices(all_devices, ch_mask, srate)
         await asyncio.sleep(5)
     # 2. re-attept to connect / restart dropped connections
     # 2.1 update device list upon new connection
-    # while True:
-    #     await connect_devices(session.inactive_device_list, ch_mask, srate, riot, wait_time=0.0)
     if active_device_list != session.active_device_list:
         print("updating device list")
         active_device_list = session.active_device_list
+        for device in active_device_list:
+            device.start()
     # 3. begin data acquisition
     print (active_device_list)
     if (isinstance(session.active_device_list[0], Riot_Device)):
         return
     while True:
-        dev_index = 0
-        device = active_device_list[dev_index]
-        try:
-            #                print('streaming from: %s (%s)' % (device.addr, dev_index))
-            await device.get_data_json(nsamples, labels, dev_index)
-            # await print_device_data()
-        except Exception as e:
-            print(e)
-            print ("connection to %s dropped" % device.addr)
-            session.debug_text = e
-            session.active_device_list.remove(device) # remove device connection
-            session.inactive_device_list.append(str(device.addr))
-            device.active_device = None
-            pass
+        for dev_index in range(len(active_device_list)):
+            device = active_device_list[dev_index]
+            try:
+                # print('streaming from: %s (%s)' % (device.addr, dev_index))
+                await device.get_data_json(nsamples, labels, dev_index)
+                # await print_device_data()
+            except Exception as e:
+                print(e)
+                print ("connection to %s dropped" % device.addr)
+                session.debug_text = e
+                session.active_device_list.remove(device) # remove device connection
+                session.inactive_device_list.append(str(device.addr))
+                device.active_device = None
+                pass
     if len(session.active_device_list) != 0:
         return
 
@@ -492,11 +504,12 @@ async def WebSockets_Data_Handler(ws, path):
     # print ("streaming data from device to %s:%i" % (path, ws.port))
     while True:
         # print(session.sensor_data_json[0])
-        if (isinstance(session.active_device_list[0], Riot_Device)):
-            session.sensor_data_json[0] = session.riot_lib.device_data[0]
-        # print(session.riot_lib.device_data[0])
-        if (sum(dev is not None for dev in session.active_device_list) and sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
-            await ws.send(session.sensor_data_json[0])
+        if (sum(dev is not None for dev in session.active_device_list)):
+            if (sum(pak is not json.dumps({}) for pak in session.sensor_data_json)):
+                await ws.send(session.sensor_data_json[0])
+            if (isinstance(session.active_device_list[0], Riot_Device)):
+                session.sensor_data_json[0] = session.riot_lib.device_data[0]
+                await ws.send(session.sensor_data_json[0])
         else:
             print('waiting for data')
             await asyncio.sleep(3.0)
@@ -529,10 +542,69 @@ class ConfigWebServer(threading.Thread):
 ConfigWebServer().start()
 
 def run():
+    global conf_json
     ut.OS = platform.system().lower()
     print ("Detected platform: " + ut.OS)
     ut.home = expanduser("~") + '/ServerBIT'
-    start_gui()
+#    start_gui()
+    try:
+        conf_json = getConfigFile()
+        conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])
+        ut.enable_servers['OSC_config'] = {
+            "riot_ip": conf_json['OSC_config'][0],
+            "riot_port": conf_json['OSC_config'][1],
+            "riot_ssid": conf_json['OSC_config'][2],
+            "net_interface_type": conf_json['OSC_config'][3]
+    }
+    except KeyError as ke:
+        session.debug_info = "invalid json file in %s" % ut.json_file_path
+        print ("invalid json file in %s" % ut.json_file_path)
+        rmtree(ut.home)
+        restart_app()
+    print("home folder %s" % ut.json_file_path[:11])
+    # import_modules()
+    # check device id, wait for valid selection
+    new_mac_addr = check_device_addr(conf_json['device'])
+    session.main_device_loop = asyncio.get_event_loop()
+    time.sleep(5.0)
+    if not check_net_config() and any(isinstance(dev, Riot_Device) for dev in session.all_devices):
+        print ("Network needs to be re-configured. Go to Preferences.html for assistance")
+        while not session.riot_server_ready:
+            session.riot_server_ready = check_net_config()
+            time.sleep(1.0)
+    else:
+        time.sleep(3.0)
+    if 'websockets' in conf_json['protocol'].lower():
+        start_server = websockets.serve(WebSockets_Data_Handler, '127.0.0.1', conf_json['port'])
+    # start_server = websockets.serve(WebSockets_Data_Handler, '0.0.0.0', conf_json['port'])
+    elif 'osc' in conf_json['protocol'].lower():
+        session.OSC_Handler = OSC_Handler(conf_json['ip_address'], conf_json['port'], conf_json['labels'])
+    try:
+        if 'websockets' in conf_json['protocol'].lower():
+            session.main_device_loop.run_until_complete(start_server)
+        elif 'osc' in conf_json['protocol'].lower():
+            session.debug_info="main loop started"
+            session.main_device_loop.create_task(OSC_Data_Handler())
+        for module_name, module_class in session.external_modules.items():
+            continue
+        session.main_device_loop.create_task(main_device_handler(session.all_devices, conf_json['channels'], conf_json['sampling_rate'], conf_json['buffer_size'], conf_json['labels']))
+        session.main_device_loop.run_forever()
+    except Exception as e:
+        print(e)
+        session.debug_info = e
+        pass
+    finally:
+        for dev_index, device in enumerate(session.active_device_list):
+            device.disconnect()
+        session.main_device_loop.stop()
+
+if __name__ == '__main__':
+#    run();
+#    global conf_json
+    ut.OS = platform.system().lower()
+    print ("Detected platform: " + ut.OS)
+    ut.home = expanduser("~") + '/ServerBIT'
+    #    start_gui()
     try:
         conf_json = getConfigFile()
         conf_json['OSC_config'][1] = int(conf_json ['OSC_config'][1])
@@ -584,5 +656,3 @@ def run():
             device.disconnect()
         session.main_device_loop.stop()
 
-if __name__ == '__main__':
-    run();

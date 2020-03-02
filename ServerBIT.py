@@ -430,7 +430,7 @@ def check_device_addr(addrs):
         except Exception as e:
             pass
         print ("connecting to %s ..." % session.all_devices)
-        return addrs
+    return addrs
 
 def connect_devices(all_devices, ch_mask, srate, wait_time=None):
     ch_mask = numpy.array(ch_mask) - 1

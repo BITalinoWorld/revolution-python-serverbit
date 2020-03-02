@@ -67,9 +67,11 @@ class OSC_Handler:
     # e.g '/<id>/bitalino/'
     async def output_bundle(self, all_data, whole_sequence=0):
         #printJSON(data)
-        bundle = osc_bundle_builder.OscBundleBuilder(
-        osc_bundle_builder.IMMEDIATELY)
+#        bundle = osc_bundle_builder.OscBundleBuilder(
+#        osc_bundle_builder.IMMEDIATELY)
         for id in range(len(all_data)):
+            bundle = osc_bundle_builder.OscBundleBuilder(
+            osc_bundle_builder.IMMEDIATELY)
             data = json.loads(all_data[id])
             while len(json.loads(json.dumps(data))) is 0:
                 await asyncio.sleep(1.0)

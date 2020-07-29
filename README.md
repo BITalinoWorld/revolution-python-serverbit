@@ -1,6 +1,6 @@
 # Overview
 
-ServerBIT (r)evolution is a minimal software package inteded to support Rapid Application Development. This is designed to demonstrate the OpenSignals client-server architecture. You can use and modify the source code under the terms of the GPL licence.
+ServerBIT (r)evolution is a minimal software package intended to support Rapid Application Development. This is designed to demonstrate the OpenSignals client-server architecture. You can use and modify the source code under the terms of the GPL licence.
 
 This architecture uses the Tornado event-driven networking engine in an approach where a Python backend handles the connection to the device, and streams the acquired data in near real-time as JSON-formatted structures to a client over the WebSockets or OSC protocol. This can be used as a service to communicate to other applications and devices (see [Examples](#Examples))
 

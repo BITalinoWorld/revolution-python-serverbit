@@ -4,9 +4,9 @@ ServerBIT (r)evolution is a minimal software package intended to support Rapid A
 
 This architecture uses the Tornado event-driven networking engine in an approach where a Python backend handles the connection to the device, and streams the acquired data in near real-time as JSON-formatted structures to a client over the WebSockets or OSC protocol. This can be used as a service to communicate to other applications and devices (see [Examples](#Examples))
 
-The lastest update icludes the following features:
+The lastest update includes the following features:
 
-- Python 3 support
+- Python 3.6+ support
 - Web configuration interface with device finder
 - [R-IoT](http://bitalino.com/en/r-iot-kit) support
 - Multiple device managment

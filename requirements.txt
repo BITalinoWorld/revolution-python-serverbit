@@ -23,7 +23,7 @@ notipy == 1.0.0
 # bitalino.py: 20
 # config_only.py: 8
 # riot_device_handler.py: 11
-numpy == 1.15.0
+numpy == 1.22.0
 
 # bitalino.py: 23
 # deviceFinder.py: 171

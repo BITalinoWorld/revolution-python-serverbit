@@ -44,7 +44,7 @@ rumps == 0.2.2; platform_system == "Darwin"
 # ServerBIT.py: 3
 # config_only.py: 3
 # riot_device_handler.py: 7
-tornado == 5.1
+tornado == 6.3.3
 
 # ServerBIT.py: 6
 # config_only.py: 6
